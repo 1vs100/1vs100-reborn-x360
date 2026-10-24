@@ -1,0 +1,32 @@
+; Copy as 1vs100Reborn.ini next to the launcher (looked up first) or to the HDD root, and set the
+; backend's LAN address.
+; The launcher reads this file and hands the values to the sysdll (ADR-0007).
+; Lines without an equals sign are ignored. A missing file or key keeps the built-in default.
+; address is an IPv4 address or a host name (at most 63 characters). The launcher resolves a name
+; through the console's DNS server and refuses the launch when it does not resolve.
+[revival]
+address=192.168.1.10
+sbg_port=1000
+matchmaking_port=1001
+
+; Logging (ADR-0008). Every key is optional; the values below are the defaults.
+[log]
+; debug | file | both | off. file: the log goes to the HDD (the game is not slowed down);
+; debug: the debug channel as before (XBDM capture); both: both.
+log_sink=file
+; error | warn | info | debug. Without the key: info in the production build, debug in the
+; diagnostics build.
+;log_level=info
+; With log_sink=file, lines this severe or worse also go to the debug channel (none: no line).
+log_debug_also=warn
+; Below the HDD root. Files are run-000001.log, run-000002.log, ...; latest.txt names the newest.
+log_dir=1vs100Reborn\logs
+; How many log files to keep (1-1000).
+log_keep=10
+; RAM buffer for the file in KB (64-16384); a full buffer drops lines and says so in the file.
+log_buffer_kb=2048
+; How often the buffer is written to the file (100-60000 ms).
+log_flush_ms=1000
+; Tags to leave out (-tag) or to keep only (tag): e.g. -netlog,-tlog or qnet,mm,launcher.
+; Tags: core title patch cave cfg mm qnet net content xam lua netlog launcher xulu tlog
+;log_tags=

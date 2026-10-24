@@ -1,0 +1,4 @@
+; Exports by ordinal only; the launcher looks them up with XexGetProcedureAddress.
+EXPORTS
+	SetRevivalConfig @1 NONAME
+	RevivalLogLine @2 NONAME

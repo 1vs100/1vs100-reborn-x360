@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<xex>
+  <!-- Own title id for the launcher (Aurora keys its entries on it; was 00000000). -->
+  <titleid id="0x584A07EA"/>
+  <format>
+    <compressed/>
+    <unencrypted />
+  </format>
+  <mediatypes>
+    <allpackages/>
+  </mediatypes>
+</xex>

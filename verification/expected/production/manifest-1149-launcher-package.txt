@@ -1,0 +1,51 @@
+pass phase=kernel build=none
+  XexLoadImage | installed | 00000199 | export
+  XexLoadImageFromMemory | installed | 0000019A | export
+pass phase=title build=none unsupported
+pass phase=title build=v2.0.1149.0
+  Content enumeration fallback | skipped | 00000000 | build
+  ContentId DeviceId fix | skipped | 00000000 | build
+  ContentId TitleID fix | skipped | 00000000 | build
+  ContentId name-length fix | skipped | 00000000 | build
+  ContentId pass-through | skipped | 00000000 | build
+  GRID RSA public keys | skipped | 00000000 | site
+  Grid default URL | installed | 82018B70 | -
+  NTP XNetConnect skip | installed | 82232950 | -
+  NetDll_XNetQosLookup | installed | 00000046 | import
+  NetDll_XNetQosRelease | installed | 00000048 | import
+  NetDll_XNetQosServiceLookup | installed | 00000047 | import
+  NetDll_XNetServerToInAddr | installed | 0000003A | import
+  NetDll_XNetStartup | installed | 00000033 | import
+  NetDll_socket | installed | 00000003 | import
+  NtClose (LSP enumerator close) | installed | 000000CF | import
+  PTNTP debug trap nop | installed | 823312B0 | -
+  QNet EndGame ordering | installed | 8222F7B0 | -
+  QNet StartGame ordering | installed | 8222F6C0 | -
+  QNet leave ordering | installed | 8222F538 | -
+  QNet native remote member | installed | 8251CEC8 | -
+  QNet send data drop | installed | 82231358 | -
+  SbgRawResolve | installed | 82239988 | -
+  SbgSessionResolve | installed | 8223ABB0 | -
+  XMsgInProcessCall | installed | 000001F4 | import
+  XMsgStartIORequest (presence roster) | installed | 000001F7 | import
+  XNetLogonGetServiceInfo | skipped | 00000132 | no_match
+  XNetServerToInAddr | installed | 8246AB10 | -
+  XamCreateEnumeratorHandle | installed | 0000024E | import
+  XamEnumerate | installed | 00000250 | import
+  XamSetUserPresetPresenceState | skipped | 00000214 | no_match
+  XamShowSigninUI | installed | 000002BC | import
+  XamUserCheckPrivilege | installed | 00000212 | import
+  XamUserGetMembershipType | skipped | 0000021B | no_match
+  XamUserGetMembershipTypeFromXUID | installed | 00000217 | import
+  XamUserGetSigninInfo | installed | 00000227 | import
+  XamUserGetSigninState | installed | 00000210 | import
+  XamUserGetXUID | installed | 0000020A | import
+  XamUserIsOnlineEnabled | skipped | 00000221 | no_match
+  XlspLookup | installed | 824685C0 | -
+  avatar relay | installed | 82118910 | -
+  liveless XSession joined | installed | 82516538 | -
+  liveless XSessionCreate | installed | 82572498 | -
+  liveless remote update | installed | 82514FC8 | -
+  local account locale | installed | 8246A590 | -
+  main-thread pump (QNet relay delivery) | installed | 82124150 | -
+  unsecured banner hide | skipped | 00000000 | site

@@ -1,0 +1,80 @@
+pass phase=kernel build=none
+  XexLoadImage | installed | 00000199 | export
+  XexLoadImageFromMemory | installed | 0000019A | export
+pass phase=title build=none unsupported
+pass phase=title build=v2.0.1317.0
+  Content enumeration fallback | installed | 000001F4 | dispatch
+  ContentId DeviceId fix | installed | 821BB2E0 | -
+  ContentId TitleID fix cave2 | installed | 82955D8C | -
+  ContentId TitleID fix wrapper call site | installed | 8236BE88 | -
+  ContentId name-length fix | installed | 821BB38C | -
+  ContentId pass-through call site | installed | 821B2D08 | -
+  ContentId pass-through cave | installed | 82955DAC | -
+  GRID RSA public key A | installed | 820A2420 | -
+  GRID RSA public key B | installed | 820A24D0 | -
+  Grid default URL | skipped | 00000000 | site
+  GridTrace | skipped | 00000000 | build
+  LuaLogWrite | skipped | 00000000 | switch
+  LuaPrintSink | skipped | 00000000 | switch
+  NetDll_WSASendTo | installed | 00000019 | import
+  NetDll_XHttpConnect | installed | 000000CD | import
+  NetDll_XHttpOpen | installed | 000000CB | import
+  NetDll_XHttpOpenRequest | installed | 000000CF | import
+  NetDll_XHttpOpenRequestUsingMemory | installed | 000000D0 | import
+  NetDll_XHttpQueryHeaders | installed | 000000D3 | import
+  NetDll_XHttpReadData | installed | 000000D4 | import
+  NetDll_XHttpReceiveResponse | installed | 000000D2 | import
+  NetDll_XHttpSendRequest | installed | 000000D1 | import
+  NetDll_XHttpSetStatusCallback | installed | 000000CE | import
+  NetDll_XHttpStartup | installed | 000000C9 | import
+  NetDll_XNetConnect | installed | 00000041 | import
+  NetDll_XNetDnsLookup | installed | 00000043 | import
+  NetDll_XNetQosLookup | installed | 00000046 | import
+  NetDll_XNetQosRelease | installed | 00000048 | import
+  NetDll_XNetQosServiceLookup | installed | 00000047 | import
+  NetDll_XNetServerToInAddr | installed | 0000003A | import
+  NetDll_XNetStartup | installed | 00000033 | import
+  NetDll_connect | installed | 0000000C | import
+  NetDll_sendto | installed | 00000018 | import
+  NetDll_socket | installed | 00000003 | import
+  NtClose (LSP enumerator close) | installed | 000000CF | import
+  Nullsub1Logger | skipped | 00000000 | site
+  Nullsub2Logger | skipped | 00000000 | site
+  Nullsub5Logger | skipped | 00000000 | site
+  PTNTP debug trap nop | installed | 82370E50 | -
+  QNet EndGame ordering | installed | 8223AC48 | -
+  QNet StartGame ordering | installed | 8223AB58 | -
+  QNet leave ordering | installed | 8223A9D0 | -
+  QNet native remote member | installed | 8256CEF8 | -
+  QNet send data drop | installed | 8223C6C0 | -
+  SbgRawResolve | installed | 825C9B30 | -
+  XMsgInProcessCall | installed | 000001F4 | import
+  XMsgStartIORequest (presence roster) | installed | 000001F7 | import
+  XNetLogonGetServiceInfo | skipped | 00000132 | no_match
+  XNetServerToInAddr | installed | 824B05E0 | -
+  XamCreateEnumeratorHandle | installed | 0000024E | import
+  XamEnumerate | installed | 00000250 | import
+  XamSetUserPresetPresenceState | skipped | 00000214 | no_match
+  XamShowSigninUI | installed | 000002BC | import
+  XamUserCheckPrivilege | installed | 00000212 | import
+  XamUserGetMembershipType | skipped | 0000021B | no_match
+  XamUserGetMembershipTypeFromXUID | installed | 00000217 | import
+  XamUserGetSigninInfo | installed | 00000227 | import
+  XamUserGetSigninState | installed | 00000210 | import
+  XamUserGetXUID | installed | 0000020A | import
+  XamUserIsOnlineEnabled | skipped | 00000221 | no_match
+  XuluWideDebug | installed | 828D6210 | -
+  avatar init anims log | skipped | 00000000 | site
+  avatar init device log | skipped | 00000000 | site
+  avatar init log | skipped | 00000000 | site
+  avatar init pre-step log | skipped | 00000000 | site
+  avatar relay | installed | 82137338 | -
+  grid config getter log | skipped | 00000000 | site
+  liveless XSession joined | skipped | 00000000 | site
+  liveless XSessionCreate | installed | 825C3CD0 | -
+  liveless remote update | skipped | 00000000 | site
+  local account locale | installed | 824B0288 | -
+  main-thread pump (QNet relay delivery) | installed | 821427F8 | -
+  massive DNS thread start log | skipped | 00000000 | site
+  massive Initialize log | skipped | 00000000 | site
+  unsecured banner hide | installed | 822293DC | -

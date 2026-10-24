@@ -1,0 +1,115 @@
+#include "LogConfig.h"
+#include "Format.h"
+#include "Text.h"
+
+BOOL LogConfig_ParseSink(const CHAR *v, DWORD n, DWORD *out)
+{
+	if (Text_EqualsNoCase(v, n, "debug"))
+		*out = LOG_SINK_DEBUG;
+	else if (Text_EqualsNoCase(v, n, "file"))
+		*out = LOG_SINK_FILE;
+	else if (Text_EqualsNoCase(v, n, "both"))
+		*out = LOG_SINK_DEBUG | LOG_SINK_FILE;
+	else if (Text_EqualsNoCase(v, n, "off"))
+		*out = 0;
+	else
+		return FALSE;
+	return TRUE;
+}
+
+BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out)
+{
+	static const CHAR *const kNames[] = {"error", "warn", "info", "debug"};
+	DWORD i = 0;
+	while (i < 4) {
+		if (Text_EqualsNoCase(v, n, kNames[i])) {
+			*out = i;
+			return TRUE;
+		}
+		i++;
+	}
+	if (allowNone && Text_EqualsNoCase(v, n, "none")) {
+		*out = LOG_LEVEL_NONE;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL LogConfig_ParseNumber(const CHAR *v, DWORD n, DWORD *out)
+{
+	DWORD i = 0, value = 0;
+	if (n == 0 || n > 9)
+		return FALSE;
+	while (i < n) {
+		if (v[i] < '0' || v[i] > '9')
+			return FALSE;
+		value = value * 10 + (DWORD)(v[i] - '0');
+		i++;
+	}
+	*out = value;
+	return TRUE;
+}
+
+static BOOL IsTagSeparator(CHAR c)
+{
+	return c == ',' || c == ' ' || c == '\t';
+}
+
+BOOL LogConfig_TagAllowed(const CHAR *filter, const CHAR *tag)
+{
+	DWORD pos = 0;
+	BOOL anyKeep = FALSE, kept = FALSE;
+	if (filter == NULL || tag == NULL)
+		return TRUE;
+	while (filter[pos] != 0) {
+		DWORD start, len;
+		BOOL drop = FALSE;
+		if (IsTagSeparator(filter[pos])) {
+			pos++;
+			continue;
+		}
+		if (filter[pos] == '-' || filter[pos] == '+') {
+			drop = filter[pos] == '-';
+			pos++;
+		}
+		start = pos;
+		while (filter[pos] != 0) {
+			if (IsTagSeparator(filter[pos]))
+				break;
+			pos++;
+		}
+		len = pos - start;
+		if (len == 0)
+			continue;
+		if (!drop)
+			anyKeep = TRUE;
+		if (Text_EqualsNoCase(filter + start, len, tag)) {
+			if (drop)
+				return FALSE;
+			kept = TRUE;
+		}
+	}
+	return !anyKeep || kept;
+}
+
+VOID LogConfig_FormatCaptureLine(
+	CHAR *buf, DWORD *pos, DWORD cap, DWORD tickMs, DWORD threadId, const CHAR *text, DWORD len)
+{
+	BOOL lf = len > 0 && text[len - 1] == '\n';
+	DWORD p = *pos, i = 0;
+	if (cap == 0 || p + 1 >= cap)
+		return;
+	if (lf)
+		len--;
+	QuizFmtUint(buf, &p, cap - 1, tickMs, 10, 0, 6, ' ');
+	p = Text_Append(buf, p, cap - 1, "ms [line] debugstr thread=0x");
+	QuizFmtUint(buf, &p, cap - 1, threadId, 16, 0, 8, '0');
+	p = Text_Append(buf, p, cap - 1, lf ? " lf string=" : " string=");
+	while (i < len && p + 1 < cap) {
+		buf[p] = text[i];
+		p++;
+		i++;
+	}
+	buf[p++] = '\n';
+	*pos = p;
+}

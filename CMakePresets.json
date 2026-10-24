@@ -1,0 +1,39 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "xdk",
+      "displayName": "Xbox 360 production build (XDK; Wine on Linux, native on Windows)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/cmake/XdkXenon.toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "xdk-diagnostics",
+      "inherits": "xdk",
+      "displayName": "Xbox 360 diagnostics build (adds the investigation-only hooks)",
+      "binaryDir": "${sourceDir}/build-diagnostics",
+      "cacheVariables": {
+        "LOADER_DIAGNOSTICS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "xdk",
+      "configurePreset": "xdk"
+    },
+    {
+      "name": "xdk-diagnostics",
+      "configurePreset": "xdk-diagnostics"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+build/
+build-tests/
+build-diagnostics/
+evidence/
+*.exe
+*.xex
+*.dll
+*.pdb
+*.xdb
+*.obj
+.clangd
+1vs100Reborn.ini
+1vs100Reborn.disable
+# local copies under the earlier name
+1vs100Loader.ini
+1vs100Loader.disable

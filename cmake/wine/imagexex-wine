@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$DIR/winepath-args.sh"
+: "${XEDK:?imagexex-wine: set XEDK to the XDK root}"
+export WINEPREFIX="${WINEPREFIX:-$HOME/.wine-xdk}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+# export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:-winemenubuilder.exe=d}"
+ensure_wineserver
+translate_args "$@"
+[ -n "${XEXWINE_WRAP_DEBUG:-}" ] && printf 'imagexex-wine: %s\n' "${TRANSLATED_ARGS[*]}" >&2
+
+# imagexex is a console PE. Bound it so a hidden MessageBox cannot stall
+# the build forever, and close stdin so it cannot block on a prompt.
+IMAGEXEX_TIMEOUT="${IMAGEXEX_TIMEOUT:-120}"
+if command -v timeout >/dev/null 2>&1; then
+    run_wine_command timeout --signal=KILL "${IMAGEXEX_TIMEOUT}" \
+        wine "$XEDK/bin/win32/imagexex.exe" "${TRANSLATED_ARGS[@]}"
+else
+    run_wine_command wine "$XEDK/bin/win32/imagexex.exe" "${TRANSLATED_ARGS[@]}"
+fi

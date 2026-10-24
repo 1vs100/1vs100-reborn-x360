@@ -1,0 +1,91 @@
+pass phase=kernel build=none
+  XexLoadImage | installed | 00000199 | export
+  XexLoadImageFromMemory | installed | 0000019A | export
+pass phase=title build=none unsupported
+pass phase=title build=v2.0.1149.0
+  Content enumeration fallback | skipped | 00000000 | build
+  ContentId DeviceId fix | skipped | 00000000 | build
+  ContentId TitleID fix | skipped | 00000000 | build
+  ContentId name-length fix | skipped | 00000000 | build
+  ContentId pass-through | skipped | 00000000 | build
+  GRID RSA public keys | skipped | 00000000 | site
+  Grid default URL | installed | 82018B70 | -
+  GridTraceChannelLookup | installed | 825750D8 | -
+  GridTraceClientSetup | installed | 8227CD78 | -
+  GridTraceClientStart | installed | 82577810 | -
+  GridTraceDecode | installed | 82579930 | -
+  GridTraceInflate | installed | 82579530 | -
+  GridTraceNtpTime | installed | 822325F8 | -
+  GridTraceParse | installed | 82575650 | -
+  GridTraceParseXml | installed | 8257C4D8 | -
+  GridTraceRequestLoop | installed | 825770B8 | -
+  GridTraceResultPost | installed | 8222B198 | -
+  GridTraceShowData | installed | 8227CCA8 | -
+  GridTraceUserXuid | installed | 82574118 | -
+  LuaLogWrite | skipped | 00000000 | switch
+  LuaPrintSink | skipped | 00000000 | switch
+  NTP XNetConnect skip | installed | 82232950 | -
+  NetDll_WSASendTo | installed | 00000019 | import
+  NetDll_XHttpConnect | installed | 000000CD | import
+  NetDll_XHttpOpen | installed | 000000CB | import
+  NetDll_XHttpOpenRequest | installed | 000000CF | import
+  NetDll_XHttpOpenRequestUsingMemory | installed | 000000D0 | import
+  NetDll_XHttpQueryHeaders | installed | 000000D3 | import
+  NetDll_XHttpReadData | installed | 000000D4 | import
+  NetDll_XHttpReceiveResponse | installed | 000000D2 | import
+  NetDll_XHttpSendRequest | installed | 000000D1 | import
+  NetDll_XHttpSetStatusCallback | installed | 000000CE | import
+  NetDll_XHttpStartup | installed | 000000C9 | import
+  NetDll_XNetConnect | installed | 00000041 | import
+  NetDll_XNetDnsLookup | installed | 00000043 | import
+  NetDll_XNetQosLookup | installed | 00000046 | import
+  NetDll_XNetQosRelease | installed | 00000048 | import
+  NetDll_XNetQosServiceLookup | installed | 00000047 | import
+  NetDll_XNetServerToInAddr | installed | 0000003A | import
+  NetDll_XNetStartup | installed | 00000033 | import
+  NetDll_connect | installed | 0000000C | import
+  NetDll_sendto | installed | 00000018 | import
+  NetDll_socket | installed | 00000003 | import
+  NtClose (LSP enumerator close) | installed | 000000CF | import
+  Nullsub1Logger | installed | 82110000 | -
+  Nullsub2Logger | installed | 82110008 | -
+  Nullsub5Logger | installed | 82120BB8 | -
+  PTNTP debug trap nop | installed | 823312B0 | -
+  QNet EndGame ordering | installed | 8222F7B0 | -
+  QNet StartGame ordering | installed | 8222F6C0 | -
+  QNet leave ordering | installed | 8222F538 | -
+  QNet native remote member | installed | 8251CEC8 | -
+  QNet send data drop | installed | 82231358 | -
+  SbgRawResolve | installed | 82239988 | -
+  SbgSessionResolve | installed | 8223ABB0 | -
+  XMsgInProcessCall | installed | 000001F4 | import
+  XMsgStartIORequest (presence roster) | installed | 000001F7 | import
+  XNetLogonGetServiceInfo | skipped | 00000132 | no_match
+  XNetServerToInAddr | installed | 8246AB10 | -
+  XamCreateEnumeratorHandle | installed | 0000024E | import
+  XamEnumerate | installed | 00000250 | import
+  XamSetUserPresetPresenceState | skipped | 00000214 | no_match
+  XamShowSigninUI | installed | 000002BC | import
+  XamUserCheckPrivilege | installed | 00000212 | import
+  XamUserGetMembershipType | skipped | 0000021B | no_match
+  XamUserGetMembershipTypeFromXUID | installed | 00000217 | import
+  XamUserGetSigninInfo | installed | 00000227 | import
+  XamUserGetSigninState | installed | 00000210 | import
+  XamUserGetXUID | installed | 0000020A | import
+  XamUserIsOnlineEnabled | skipped | 00000221 | no_match
+  XlspLookup | installed | 824685C0 | -
+  XuluWideDebug | skipped | 00000000 | site
+  avatar init anims log | installed | 82289DF0 | -
+  avatar init device log | installed | 822B4840 | -
+  avatar init log | installed | 822863C0 | -
+  avatar init pre-step log | installed | 82291C60 | -
+  avatar relay | installed | 82118910 | -
+  grid config getter log | installed | 8224CAC0 | -
+  liveless XSession joined | installed | 82516538 | -
+  liveless XSessionCreate | installed | 82572498 | -
+  liveless remote update | installed | 82514FC8 | -
+  local account locale | installed | 8246A590 | -
+  main-thread pump (QNet relay delivery) | installed | 82124150 | -
+  massive DNS thread start log | installed | 824FB140 | -
+  massive Initialize log | installed | 824F3178 | -
+  unsecured banner hide | skipped | 00000000 | site

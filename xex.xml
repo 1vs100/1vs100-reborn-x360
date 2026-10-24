@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<xex>
+  <format>
+    <compressed/>
+    <unencrypted />
+  </format>
+  <mediatypes>
+    <allpackages/>
+  </mediatypes>
+  <sysdll/>
+  <!-- A system module's exports need a container (imagexex IM1034); DashLaunch's launch.xex does
+       the same. SetRevivalConfig, sysdll/1vs100Reborn.def. -->
+  <exportcontainer name="1vs100Reborn.xex"/>
+  <baseaddr addr="0x91B00000"/>
+</xex>

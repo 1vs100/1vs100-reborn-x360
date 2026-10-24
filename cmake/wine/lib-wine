@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$DIR/winepath-args.sh"
+: "${XEDK:?lib-wine: set XEDK to the XDK root}"
+export WINEPREFIX="${WINEPREFIX:-$HOME/.wine-xdk}"
+export WINEDEBUG="${WINEDEBUG:--all}"
+ensure_wineserver
+translate_args "$@"
+[ -n "${XEXWINE_WRAP_DEBUG:-}" ] && printf 'lib-wine: %s\n' "${TRANSLATED_ARGS[*]}" >&2
+run_wine_command wine "$XEDK/bin/win32/lib.exe" "${TRANSLATED_ARGS[@]}"

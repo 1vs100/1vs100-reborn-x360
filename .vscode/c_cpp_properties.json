@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Xbox 360",
+            "includePath": [
+                "${XEDK}/include/xbox"
+            ],
+            "defines": [
+                "_XBOX",
+                "NDEBUG",
+                "_MSC_VER=1300"
+            ],
+            "cppStandard": "c++98",
+            "intelliSenseMode": "msvc-x86"
+        }
+    ],
+    "version": 4
+}

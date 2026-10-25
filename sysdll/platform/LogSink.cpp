@@ -20,9 +20,11 @@ static const DWORD kWriterPollMs = 50;
 static const DWORD kRecordHeader = 12; /* tick, thread id, length */
 static const DWORD kPoolTag = 0x51534C47;
 
-/* Until configured: debug channel, kept for the file. */
+/* Until configured: debug channel, kept for the file. Fits the smallest pool ring. */
 static BYTE g_EarlyRing[32 * 1024];
+typedef char EarlyRingFitsPoolRing[sizeof(g_EarlyRing) <= kMinBufferBytes ? 1 : -1];
 
+/* Under g_RingLock: every logging thread appends, the writer thread consumes. */
 static SpinLock g_RingLock = SPINLOCK_INIT;
 static BYTE *g_Ring = g_EarlyRing;
 static DWORD g_RingSize = sizeof(g_EarlyRing); /* a power of two */
@@ -30,22 +32,29 @@ static DWORD g_Head = 0;                       /* bytes ever appended */
 static DWORD g_Tail = 0;                       /* bytes ever consumed */
 static BYTE *g_PoolRing = NULL;
 
-static volatile LONG g_Configured = FALSE;
+/* Written under g_RingLock (Log_Configure, the writer thread, Log_Shutdown); read without it. */
 static volatile DWORD g_Sink = LOG_SINK_DEBUG | LOG_SINK_FILE;
+
+/* Written once by Log_Configure (launcher thread) before g_Configured; read by every logging
+ * thread without a lock. A reader racing Log_Configure filters by the start-up values. */
+static volatile LONG g_Configured = FALSE;
 static DWORD g_Level = LOG_LEVEL_DEBUG;
 static DWORD g_DebugAlso = LOG_LEVEL_WARN;
 static DWORD g_FlushMs = LOG_DEFAULT_FLUSH_MS;
 static CHAR g_Tags[LOG_TAGS_BYTES];
 static CHAR g_File[LOG_PATH_BYTES];
+
+/* Writer thread only, after g_Configured. */
 static DWORD g_FileOffset = 0;
 
+/* Interlocked. */
 static volatile LONG g_Dropped = 0;
 static volatile LONG g_Wake = FALSE;
 static volatile LONG g_Stop = FALSE;
 static volatile LONG g_WriterDone = FALSE;
 static volatile LONG g_WriterRunning = FALSE;
 
-BOOL Log_Wanted(LogLevel level, const CHAR *tag)
+static BOOL Log_Wanted(LogLevel level, const CHAR *tag)
 {
 	if ((DWORD)level > g_Level)
 		return FALSE;
@@ -121,9 +130,40 @@ VOID Log_EmitText(LogLevel level, const CHAR *tag, const CHAR *text)
 	Log_Route(level, text);
 }
 
-VOID Log_RouteBuilt(LogLevel level, const CHAR *text)
+static const CHAR kLevelLetter[] = {'E', 'W', 'I', 'D'};
+
+VOID Log_Write(LogLevel level, const CHAR *tag, const CHAR *fmt, ...)
 {
-	Log_Route(level, text);
+	CHAR buf[LOG_LINE_BYTES];
+	DWORD pos = 0;
+	va_list args;
+
+	/* Filter first: a dropped line costs no formatting. */
+	if (!Log_Wanted(level, tag))
+		return;
+	/* Built by hand: no CRT. */
+	while (pos < 4) {
+		buf[pos] = "[QS]"[pos];
+		pos++;
+	}
+	buf[pos++] = '[';
+	buf[pos++] = kLevelLetter[level <= LOG_LEVEL_DEBUG ? level : LOG_LEVEL_DEBUG];
+	buf[pos++] = ']';
+	buf[pos++] = '[';
+	while (*tag != 0 && pos < 24) {
+		buf[pos] = *tag;
+		pos++;
+		tag++;
+	}
+	buf[pos++] = ']';
+	buf[pos++] = ' ';
+
+	va_start(args, fmt);
+	QuizFormatInto(buf, &pos, sizeof(buf) - 1, fmt, args);
+	va_end(args);
+	buf[pos++] = '\n';
+	buf[pos] = 0;
+	Log_Route(level, buf);
 }
 
 /* System pool: the default pool belongs to the configuring thread's process. Halves on failure. */
@@ -170,8 +210,6 @@ VOID Log_Configure(const LogSettings *settings)
 		DWORD used = g_Head - g_Tail, i = 0;
 		BYTE *oldRing = g_Ring;
 		DWORD oldMask = g_RingSize - 1, oldTail = g_Tail;
-		if (used > size)
-			used = 0;
 		while (i < used) {
 			ring[i] = oldRing[(oldTail + i) & oldMask];
 			i++;
@@ -194,10 +232,10 @@ VOID Log_Configure(const LogSettings *settings)
 
 	if (wantFile && ring == NULL)
 		LOG_ERROR("core", "log: no memory for the file buffer, logging to the debug channel");
-	LOG_INFO("core", "log: sink=%s%s level=%u debug_also=%d buffer=%u flush=%ums file=%s tags=%s",
-		(g_Sink & LOG_SINK_DEBUG) ? "debug" : "", (g_Sink & LOG_SINK_FILE) ? "+file" : "",
-		g_Level, (int)g_DebugAlso, g_PoolRing ? g_RingSize : 0, g_FlushMs,
-		g_File[0] ? g_File : "-", g_Tags[0] ? g_Tags : "-");
+	LOG_INFO("core", "log: sink=%s level=%s debug_also=%s buffer=%uKB flush=%ums file=%s tags=%s",
+		LogConfig_SinkName(g_Sink), LogConfig_LevelName(g_Level), LogConfig_LevelName(g_DebugAlso),
+		g_PoolRing ? g_RingSize / 1024 : 0, g_FlushMs, g_File[0] ? g_File : "-",
+		g_Tags[0] ? g_Tags : "-");
 }
 
 

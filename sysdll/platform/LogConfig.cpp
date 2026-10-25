@@ -2,27 +2,37 @@
 #include "Format.h"
 #include "Text.h"
 
+static const CHAR *const kSinkNames[] = {"off", "debug", "file", "both"}; /* by LOG_SINK_* bits */
+static const CHAR *const kLevelNames[] = {"error", "warn", "info", "debug"};
+
 BOOL LogConfig_ParseSink(const CHAR *v, DWORD n, DWORD *out)
 {
-	if (Text_EqualsNoCase(v, n, "debug"))
-		*out = LOG_SINK_DEBUG;
-	else if (Text_EqualsNoCase(v, n, "file"))
-		*out = LOG_SINK_FILE;
-	else if (Text_EqualsNoCase(v, n, "both"))
-		*out = LOG_SINK_DEBUG | LOG_SINK_FILE;
-	else if (Text_EqualsNoCase(v, n, "off"))
-		*out = 0;
-	else
-		return FALSE;
-	return TRUE;
+	DWORD i = 0;
+	while (i < 4) {
+		if (Text_EqualsNoCase(v, n, kSinkNames[i])) {
+			*out = i;
+			return TRUE;
+		}
+		i++;
+	}
+	return FALSE;
+}
+
+const CHAR *LogConfig_SinkName(DWORD sink)
+{
+	return kSinkNames[sink & (LOG_SINK_DEBUG | LOG_SINK_FILE)];
+}
+
+const CHAR *LogConfig_LevelName(DWORD level)
+{
+	return level <= LOG_LEVEL_DEBUG ? kLevelNames[level] : "none";
 }
 
 BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out)
 {
-	static const CHAR *const kNames[] = {"error", "warn", "info", "debug"};
 	DWORD i = 0;
 	while (i < 4) {
-		if (Text_EqualsNoCase(v, n, kNames[i])) {
+		if (Text_EqualsNoCase(v, n, kLevelNames[i])) {
 			*out = i;
 			return TRUE;
 		}

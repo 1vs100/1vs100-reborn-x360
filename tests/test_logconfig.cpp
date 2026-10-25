@@ -35,6 +35,10 @@ void TestLogConfig()
 	CHECK(Level("info", FALSE) == 2 && Level("debug", FALSE) == 3);
 	CHECK(Level("none", FALSE) == 0xAA && Level("none", TRUE) == LOG_LEVEL_NONE);
 	CHECK(Level("verbose", TRUE) == 0xAA);
+	CHECK(strcmp(LogConfig_SinkName(LOG_SINK_DEBUG | LOG_SINK_FILE), "both") == 0);
+	CHECK(strcmp(LogConfig_SinkName(0), "off") == 0);
+	CHECK(strcmp(LogConfig_LevelName(LOG_LEVEL_WARN), "warn") == 0);
+	CHECK(strcmp(LogConfig_LevelName(LOG_LEVEL_NONE), "none") == 0);
 
 	CHECK(LogConfig_BufferKbValid(64) && LogConfig_BufferKbValid(2048) && LogConfig_BufferKbValid(16384));
 	CHECK(!LogConfig_BufferKbValid(32) && !LogConfig_BufferKbValid(3000) && !LogConfig_BufferKbValid(32768));

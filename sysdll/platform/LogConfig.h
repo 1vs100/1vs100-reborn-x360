@@ -17,11 +17,14 @@ enum LogLevel { LOG_LEVEL_ERROR, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
 #define LOG_BUFFER_MAX_KB 16384
 #define LOG_DEFAULT_BUFFER_KB 2048
 
-/* debug, file, both, off. */
+/* off, debug, file, both. */
 BOOL LogConfig_ParseSink(const CHAR *v, DWORD n, DWORD *out);
+const CHAR *LogConfig_SinkName(DWORD sink);
 /* error, warn, info, debug; with allowNone, also none. */
 #define LOG_LEVEL_NONE 0xFFFFFFFFu
 BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out);
+/* "none" past debug. */
+const CHAR *LogConfig_LevelName(DWORD level);
 
 /* Power of two, LOG_BUFFER_MIN_KB..LOG_BUFFER_MAX_KB: the ring indexes with a mask. */
 BOOL LogConfig_BufferKbValid(DWORD kb);

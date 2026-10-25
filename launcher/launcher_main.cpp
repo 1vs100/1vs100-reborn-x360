@@ -115,7 +115,7 @@ static BOOL LoadSysdllViaDashLaunch(const CHAR *path)
 	HANDLE hDashLaunch = NULL;
 	NTSTATUS st = XexGetModuleHandle((PSZ)DASHLAUNCH_MODULE, &hDashLaunch);
 	if (!NT_SUCCESS(st) || !hDashLaunch) {
-		Log("Launcher: XexGetModuleHandle(%s) -> %08X handle=%p (DashLaunch not resident?)",
+		LogWarn("Launcher: XexGetModuleHandle(%s) -> %08X handle=%p (DashLaunch not resident?)",
 			DASHLAUNCH_MODULE, st, hDashLaunch);
 		return FALSE;
 	}
@@ -124,7 +124,7 @@ static BOOL LoadSysdllViaDashLaunch(const CHAR *path)
 	st = XexGetProcedureAddress(
 		hDashLaunch, DLAUNCH_START_SYS_MODULE_ORDINAL, &dlaunchStartSysModule);
 	if (!NT_SUCCESS(st) || !dlaunchStartSysModule) {
-		Log("Launcher: XexGetProcedureAddress(launch.xex, ord=%u) -> %08X addr=%p",
+		LogWarn("Launcher: XexGetProcedureAddress(launch.xex, ord=%u) -> %08X addr=%p",
 			DLAUNCH_START_SYS_MODULE_ORDINAL, st, dlaunchStartSysModule);
 		return FALSE;
 	}
@@ -153,7 +153,7 @@ static BOOL UnloadResidentSysdll()
 	ldr->LoadCount = 1;
 	XexUnloadImage(hSysdll);
 	if (ResidentModule(SYSDLL_MODULE)) {
-		Log("Launcher: %s still resident after the unload", SYSDLL_MODULE);
+		LogWarn("Launcher: %s still resident after the unload", SYSDLL_MODULE);
 		return FALSE;
 	}
 	Log("Launcher: %s unloaded", SYSDLL_MODULE);
@@ -174,7 +174,7 @@ static BOOL AvatarDataInstalled()
 	HRESULT hr = XAvatarInitialize(XAVATAR_COORDINATE_SYSTEM_RIGHT_HANDED, 0,
 		XAVATAR_INITIALIZE_DEFAULT_ASSET_LOAD_THREAD, 2, NULL);
 	if (FAILED(hr)) {
-		Log("Launcher: XAvatarInitialize -> %08X: no avatar data", hr);
+		LogWarn("Launcher: XAvatarInitialize -> %08X: no avatar data", hr);
 		return FALSE;
 	}
 
@@ -196,7 +196,7 @@ static BOOL AvatarDataInstalled()
 	XAvatarShutdown();
 
 	if (rc != ERROR_SUCCESS) {
-		Log("Launcher: XAvatarGetMetadataRandom -> %08X: no avatar data", rc);
+		LogWarn("Launcher: XAvatarGetMetadataRandom -> %08X: no avatar data", rc);
 		return FALSE;
 	}
 	Log("Launcher: avatar data present");
@@ -219,7 +219,7 @@ static const WCHAR *PreflightRefusal()
 /* Notify, then back to the default app. */
 static VOID RefuseLaunch(const WCHAR *reason)
 {
-	Log("Launcher: launch refused: %S", reason);
+	LogError("Launcher: launch refused: %S", reason);
 	XNotifyQueueUI(XNOTIFYUI_TYPE_AVOID_REVIEW, XUSER_INDEX_ANY, XNOTIFYUI_PRIORITY_HIGH,
 		(PWCHAR)reason, NULL);
 	Sleep(REFUSAL_NOTICE_MS);
@@ -239,12 +239,12 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
 	INT rc = XNetStartup(&xnsp);
 	if (rc != 0) {
-		Log("Launcher: XNetStartup -> %d", rc);
+		LogWarn("Launcher: XNetStartup -> %d", rc);
 		return FALSE;
 	}
 	rc = WSAStartup(MAKEWORD(2, 2), &wsa);
 	if (rc != 0) {
-		Log("Launcher: WSAStartup -> %d", rc);
+		LogWarn("Launcher: WSAStartup -> %d", rc);
 		XNetCleanup();
 		return FALSE;
 	}
@@ -259,7 +259,7 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 		Log("Launcher: DNS %s -> status %d, %u address(es)", host, dns->iStatus, dns->cina);
 		XNetDnsRelease(dns);
 	} else {
-		Log("Launcher: XNetDnsLookup(%s) -> %d", host, rc);
+		LogWarn("Launcher: XNetDnsLookup(%s) -> %d", host, rc);
 	}
 	WSACloseEvent(done);
 	WSACleanup();
@@ -279,10 +279,10 @@ static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 	if (FindLauncherFile(REVIVAL_INI_FILE, path, sizeof(path)))
 		n = ReadDeviceFile(path, buf, sizeof(buf), &st);
 	if (n < 0) {
-		Log("Launcher: config: no %s read", REVIVAL_INI_FILE);
+		LogWarn("Launcher: config: no %s read", REVIVAL_INI_FILE);
 		n = 0;
 	}
-	BOOL valid = LauncherConfig_Parse(buf, (DWORD)n, config, Log);
+	BOOL valid = LauncherConfig_Parse(buf, (DWORD)n, config, LogWarn);
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
 		LONG got = ReadDeviceFile(
@@ -305,7 +305,7 @@ static BOOL HandOverConfig(HANDLE hSysdll, RevivalLaunchConfig *config)
 	SetRevivalConfig_t setRevivalConfig = NULL;
 	NTSTATUS st = XexGetProcedureAddress(hSysdll, REVIVAL_SET_CONFIG_ORDINAL, &setRevivalConfig);
 	if (!NT_SUCCESS(st) || !setRevivalConfig) {
-		Log("Launcher: XexGetProcedureAddress(%s, ord=%u) -> %08X addr=%p", SYSDLL_MODULE,
+		LogWarn("Launcher: XexGetProcedureAddress(%s, ord=%u) -> %08X addr=%p", SYSDLL_MODULE,
 			REVIVAL_SET_CONFIG_ORDINAL, st, setRevivalConfig);
 		return FALSE;
 	}
@@ -389,7 +389,7 @@ void __cdecl main()
 		return;
 	}
 	if (!SetChannelLaunchData()) {
-		Log("Launcher: cannot set the launch data, stopping");
+		LogError("Launcher: cannot set the launch data, stopping");
 		return;
 	}
 	if (FileExists("game:\\" GAME_XEX))
@@ -398,5 +398,5 @@ void __cdecl main()
 		LaunchFromPackage();
 
 	// No launch returns on success.
-	Log("Launcher: no game launched");
+	LogError("Launcher: no game launched");
 }

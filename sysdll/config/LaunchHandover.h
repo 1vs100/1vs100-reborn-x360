@@ -33,4 +33,4 @@ struct RevivalLaunchConfig {
 
 typedef BOOL (*SetRevivalConfig_t)(const RevivalLaunchConfig *config);
 /* Launcher logs through the sysdll after hand-over, so its last lines land in the same file. */
-typedef VOID (*RevivalLogLine_t)(const CHAR *line);
+typedef VOID (*RevivalLogLine_t)(DWORD level, const CHAR *line);

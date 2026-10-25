@@ -56,7 +56,7 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 	return TRUE;
 }
 
-extern "C" VOID RevivalLogLine(const CHAR *line)
+extern "C" VOID RevivalLogLine(DWORD level, const CHAR *line)
 {
-	Log_EmitText(LOG_LEVEL_INFO, "launcher", line);
+	Log_EmitText((LogLevel)level, "launcher", line);
 }

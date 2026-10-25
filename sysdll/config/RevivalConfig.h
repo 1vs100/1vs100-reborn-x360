@@ -14,4 +14,4 @@ BOOL RevivalConfigReceived();
 extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config);
 
 /* Launcher lines after hand-over, into the same log. */
-extern "C" VOID RevivalLogLine(const CHAR *line);
+extern "C" VOID RevivalLogLine(DWORD level, const CHAR *line);

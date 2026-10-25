@@ -28,22 +28,7 @@ DWORD Log_WriterMain(PVOID unused);
 VOID Log_RequestFlush();
 VOID Log_Shutdown(DWORD waitMs);
 
-/* Levels above LOADER_LOG_LEVEL compile out, arguments unevaluated. */
-#ifndef LOADER_LOG_LEVEL
-#define LOADER_LOG_LEVEL LOG_LEVEL_DEBUG
-#endif
-
-#if defined(LOADER_NO_DEBUG_PRINTS)
-#define LOG_AT(level, tag, fmt, ...) \
-	do {                             \
-	} while (0)
-#else
-#define LOG_AT(level, tag, fmt, ...)                     \
-	do {                                                 \
-		if ((level) <= LOADER_LOG_LEVEL)                 \
-			Log_Write((level), (tag), fmt, __VA_ARGS__); \
-	} while (0)
-#endif
+#define LOG_AT(level, tag, fmt, ...) Log_Write((level), (tag), fmt, __VA_ARGS__)
 
 #define LOG_ERROR(tag, fmt, ...) LOG_AT(LOG_LEVEL_ERROR, tag, fmt, __VA_ARGS__)
 #define LOG_WARN(tag, fmt, ...) LOG_AT(LOG_LEVEL_WARN, tag, fmt, __VA_ARGS__)

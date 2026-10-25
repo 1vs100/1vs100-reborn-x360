@@ -1,5 +1,6 @@
 #pragma once
-#include "MatchmakingTypes.h"
+#include "../platform/Types.h"
+#include "protocol/MatchmakingTypes.h"
 
 /* Relayed QNet payloads in two rings. Out: title threads queue, loader sends. In: loader queues, title main thread takes. */
 

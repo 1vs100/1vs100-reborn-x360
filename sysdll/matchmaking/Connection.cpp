@@ -1,5 +1,5 @@
 #include "Connection.h"
-#include "Protocol.h"
+#include "protocol/Protocol.h"
 #include "../config/RevivalConfig.h"
 #include "../platform/Log.h"
 
@@ -96,9 +96,11 @@ static BOOL RecvFrame(BYTE *type, BYTE *payload, DWORD payloadCap, DWORD *payloa
 {
 	BYTE header[MM_HEADER_SIZE];
 	BYTE version;
+	uint32_t len;
 	if (!RecvAll(header, MM_HEADER_SIZE))
 		return FALSE;
-	MmParseHeader(header, &version, type, payloadLen);
+	MmParseHeader(header, &version, type, &len);
+	*payloadLen = len;
 	if (version != MM_PROTOCOL_VERSION) {
 		g_RejectReason = MM_REJECT_VERSION;
 		g_RejectVersion = version;

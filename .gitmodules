@@ -1,3 +1,6 @@
 [submodule "xkelib"]
 	path = xkelib
 	url = https://github.com/1vs100/xkelib.git
+[submodule "sysdll/matchmaking/protocol"]
+	path = sysdll/matchmaking/protocol
+	url = https://github.com/1vs100/1vs100-mm-protocol.git

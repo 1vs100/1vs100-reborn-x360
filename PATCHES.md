@@ -10,7 +10,7 @@ Format: whitespace-separated names, case-insensitive. Any character other than `
 
 The launcher looks for it next to itself first (its `game:\` directory, resolved to a device
 path), then on the HDD root (`\Device\Harddisk0\Partition1\1vs100Reborn.disable`), reads it and
-hands its text to the loader with the config (ADR-0007). `Launcher: 1vs100Reborn.disable found …`
+hands its text to the loader with the config. `Launcher: 1vs100Reborn.disable found …`
 shows which copy was used, the loader's `patch switches:` line what it holds, and a switched-off
 patch reports `skipped, why=switch` in the patch manifest.
 

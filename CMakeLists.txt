@@ -85,7 +85,7 @@ add_xex(1vs100Reborn
     USE_XKELIB ON
 )
 
-# --- CRT-touch guards (ADR-0001) ---------------------------------------
+# CRT-touch guards
 #
 # Hook code runs on title threads, and a CRT call there can put this module's per-thread CRT
 # state into a TLS index XUI also uses. Two layers, because neither alone catches everything:
@@ -98,7 +98,7 @@ if(LOADER_DIAGNOSTICS)
     target_compile_definitions(1vs100Reborn PRIVATE LOADER_DIAGNOSTICS)
 endif()
 target_link_options(1vs100Reborn PRIVATE "/MAP:${CMAKE_BINARY_DIR}/1vs100Reborn.map" "/MAPINFO:EXPORTS")
-# SetRevivalConfig, the launcher's config hand-over (ADR-0007), exported by ordinal.
+# SetRevivalConfig, the launcher's config hand-over, exported by ordinal.
 target_link_options(1vs100Reborn PRIVATE "/DEF:${CMAKE_SOURCE_DIR}/sysdll/1vs100Reborn.def")
 set_property(TARGET 1vs100Reborn APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/sysdll/1vs100Reborn.def")
 

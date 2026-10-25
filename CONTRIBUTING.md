@@ -7,7 +7,7 @@ a test.
 
 | # | Rule | Checked by |
 |---|------|------------|
-| R1 | No CRT on any path reachable from a hook: use `platform/Text`, `platform/Format`, `platform/Log` ([ADR-0001](docs/adr/0001-no-crt-on-hook-paths.md)) | `/we4995`, `cmake/check-crt-calls.py` |
+| R1 | No CRT on any path reachable from a hook: use `platform/Text`, `platform/Format`, `platform/Log` | `/we4995`, `cmake/check-crt-calls.py` |
 | R2 | Reads and writes of foreign code go through `platform/MemoryPatch` (`EnsureBytes`, `EnsureJump`) or the site helpers in `registry/PatchHelpers` | review |
 | R3 | No build branches outside `title/`: ask the profile (`TitleSite`, policy rows) | `cmake/check-build-branches.py` |
 | R4 | Every patch is a registry row with manifest id, switch name, phase, summary and, when it keeps per-title state, a reset | review, `docs/patches.md` |

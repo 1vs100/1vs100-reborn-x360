@@ -1,6 +1,6 @@
 ; Copy as 1vs100Reborn.ini next to the launcher (looked up first) or to the HDD root, and set the
 ; backend's LAN address.
-; The launcher reads this file and hands the values to the sysdll (ADR-0007).
+; The launcher reads this file and hands the values to the sysdll.
 ; Lines without an equals sign are ignored. A missing file or key keeps the built-in default.
 ; address is an IPv4 address or a host name (at most 16 characters). The launcher resolves a name
 ; through the console's DNS server and refuses the launch when it does not resolve.
@@ -9,7 +9,7 @@ address=192.168.1.10
 sbg_port=1000
 matchmaking_port=1001
 
-; Logging (ADR-0008). Every key is optional; the values below are the defaults.
+; Logging. Every key is optional; the values below are the defaults.
 [log]
 ; debug | file | both | off. file: the log goes to the HDD (the game is not slowed down);
 ; debug: the debug channel as before (XBDM capture); both: both.

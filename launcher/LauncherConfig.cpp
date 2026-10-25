@@ -2,8 +2,6 @@
 #include "../sysdll/platform/Ini.h"
 #include "../sysdll/platform/Text.h"
 
-#define DEFAULT_BACKEND "192.168.42.1"
-#define DEFAULT_BACKEND_IN_ADDR 0xC0A82A01u
 #define DEFAULT_SBG_PORT 1000
 #define DEFAULT_MATCHMAKING_PORT 1001
 #define DEFAULT_LOG_DIR "1vs100Reborn\\logs"
@@ -81,18 +79,17 @@ static BOOL ReadLogKey(const IniLine &line, LauncherConfig *launcher, ConfigWarn
 	return TRUE;
 }
 
-VOID LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher, ConfigWarn_t warn)
+BOOL LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher, ConfigWarn_t warn)
 {
 	RevivalLaunchConfig *config = &launcher->handover;
 	IniLine line;
 	DWORD pos = 0;
+	BOOL hostSet = FALSE;
 
 	*launcher = LauncherConfig();
 	config->size = sizeof(*config);
-	config->backendInAddr = DEFAULT_BACKEND_IN_ADDR;
 	config->sbgPort = DEFAULT_SBG_PORT;
 	config->matchmakingPort = DEFAULT_MATCHMAKING_PORT;
-	Text_Append(config->backendHost, 0, sizeof(config->backendHost), DEFAULT_BACKEND);
 	config->logSink = LOG_SINK_FILE;
 	config->logDebugAlso = LOG_LEVEL_WARN;
 	config->logBufferKb = LOG_DEFAULT_BUFFER_KB;
@@ -104,8 +101,8 @@ VOID LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher,
 		if (Text_EqualsNoCase(line.key, line.keyLen, "address")) {
 			DWORD addr;
 			if (line.valueLen > REVIVAL_GRID_HOST_MAX) {
-				warn("Launcher: config: address longer than %u characters (Grid URL), keeping %s",
-					(unsigned)REVIVAL_GRID_HOST_MAX, config->backendHost);
+				warn("Launcher: config: address longer than %u characters (Grid URL)",
+					(unsigned)REVIVAL_GRID_HOST_MAX);
 				continue;
 			}
 			if (Ini_ParseIPv4(line.value, line.valueLen, &addr)) {
@@ -114,12 +111,11 @@ VOID LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher,
 			} else if (Ini_IsHostname(line.value, line.valueLen)) {
 				launcher->hostIsName = TRUE;
 			} else {
-				warn("Launcher: config: address is neither an IPv4 address nor a host name, "
-					 "keeping %s",
-					config->backendHost);
+				warn("Launcher: config: address is neither an IPv4 address nor a host name");
 				continue;
 			}
 			Text_Append(config->backendHost, 0, line.valueLen + 1, line.value);
+			hostSet = TRUE;
 		} else if (Text_EqualsNoCase(line.key, line.keyLen, "sbg_port")) {
 			SetUint(line, 1, 65535, &config->sbgPort, warn);
 		} else if (Text_EqualsNoCase(line.key, line.keyLen, "matchmaking_port")) {
@@ -128,4 +124,7 @@ VOID LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher,
 			warn("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
 		}
 	}
+	if (!hostSet)
+		warn("Launcher: config: no valid address");
+	return hostSet;
 }

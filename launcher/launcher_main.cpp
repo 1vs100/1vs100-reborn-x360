@@ -267,8 +267,8 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	return resolved;
 }
 
-/* ini and disable to config. Unresolvable host refuses the launch. */
-static BOOL ReadRevivalConfig(LauncherConfig *config)
+/* ini and disable to config. NULL when the launch may go ahead. */
+static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 {
 	static CHAR buf[REVIVAL_INI_BYTES];
 	RevivalLaunchConfig *handover = &config->handover;
@@ -279,10 +279,10 @@ static BOOL ReadRevivalConfig(LauncherConfig *config)
 	if (FindLauncherFile(REVIVAL_INI_FILE, path, sizeof(path)))
 		n = ReadDeviceFile(path, buf, sizeof(buf), &st);
 	if (n < 0) {
-		Log("Launcher: config: no %s read, using defaults", REVIVAL_INI_FILE);
+		Log("Launcher: config: no %s read", REVIVAL_INI_FILE);
 		n = 0;
 	}
-	LauncherConfig_Parse(buf, (DWORD)n, config, Log);
+	BOOL hostSet = LauncherConfig_Parse(buf, (DWORD)n, config, Log);
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
 		LONG got = ReadDeviceFile(
@@ -290,11 +290,13 @@ static BOOL ReadRevivalConfig(LauncherConfig *config)
 		handover->patchSwitches[got > 0 ? got : 0] = 0;
 	}
 
+	if (!hostSet)
+		return L"1 vs 100: set the backend address in 1vs100Reborn.ini";
 	if (config->hostIsName && !ResolveHost(handover->backendHost, &handover->backendInAddr))
-		return FALSE;
+		return L"1 vs 100: the backend host in 1vs100Reborn.ini did not resolve";
 	Log("Launcher: config: address=%s (%08X) sbg=%u mm=%u", handover->backendHost,
 		handover->backendInAddr, handover->sbgPort, handover->matchmakingPort);
-	return TRUE;
+	return NULL;
 }
 
 /* Config before the game starts. From then on the launcher logs through it. */
@@ -359,15 +361,13 @@ void __cdecl main()
 	ResolveGameDir();
 	/* Config first: a refused launch lands in the file too. */
 	LauncherConfig config;
-	BOOL configRead = ReadRevivalConfig(&config);
+	const WCHAR *configRefusal = ReadRevivalConfig(&config);
 	LauncherLog_Open(&config.handover, config.logDir, config.logKeep);
 	const WCHAR *refusal = PreflightRefusal();
+	if (!refusal)
+		refusal = configRefusal;
 	if (refusal) {
 		RefuseLaunch(refusal);
-		return;
-	}
-	if (!configRead) {
-		RefuseLaunch(L"1 vs 100: the backend host in 1vs100Reborn.ini was not found");
 		return;
 	}
 	if (!UnloadResidentSysdll()) {

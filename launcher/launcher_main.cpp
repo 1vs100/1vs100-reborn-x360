@@ -267,27 +267,40 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	return resolved;
 }
 
+/* -1 when unreadable or when the file fills buf, so its end would be lost. */
+static LONG ReadConfigFile(const CHAR *path, CHAR *buf, DWORD cap)
+{
+	NTSTATUS st;
+	LONG got = ReadDeviceFile(path, buf, cap, &st);
+	if (got < 0)
+		LogWarn("Launcher: config: cannot read %s (%08X)", path, st);
+	else if ((DWORD)got >= cap - 1)
+		LogWarn("Launcher: config: %s is longer than %u bytes", path, cap - 2);
+	else
+		return got;
+	return -1;
+}
+
 /* ini and disable to config. NULL when the launch may go ahead. */
 static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 {
 	static CHAR buf[REVIVAL_INI_BYTES];
 	RevivalLaunchConfig *handover = &config->handover;
 	CHAR path[MAX_PATH];
-	NTSTATUS st;
 	LONG n = -1;
 
 	if (FindLauncherFile(REVIVAL_INI_FILE, path, sizeof(path)))
-		n = ReadDeviceFile(path, buf, sizeof(buf), &st);
-	if (n < 0) {
-		LogWarn("Launcher: config: no %s read", REVIVAL_INI_FILE);
-		n = 0;
-	}
-	BOOL valid = LauncherConfig_Parse(buf, (DWORD)n, config, LogWarn);
+		n = ReadConfigFile(path, buf, sizeof(buf));
+	/* Parsed even without a file: the log needs its settings. */
+	BOOL valid = LauncherConfig_Parse(buf, n > 0 ? (DWORD)n : 0, config, LogWarn);
+	if (n < 0)
+		valid = FALSE;
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
-		LONG got = ReadDeviceFile(
-			path, handover->patchSwitches, sizeof(handover->patchSwitches), &st);
-		handover->patchSwitches[got > 0 ? got : 0] = 0;
+		LONG got = ReadConfigFile(path, handover->patchSwitches, sizeof(handover->patchSwitches));
+		if (got < 0)
+			return L"1 vs 100: 1vs100Reborn.disable is unreadable or too long, see the log";
+		handover->patchSwitches[got] = 0;
 	}
 
 	if (!valid)

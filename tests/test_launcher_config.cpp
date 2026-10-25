@@ -23,7 +23,7 @@ void TestLauncherConfig()
 	CHECK(!Parse("", &c) && g_Warnings == 1 && c.handover.backendHost[0] == 0);
 	CHECK(c.handover.size == sizeof(c.handover));
 	CHECK(c.handover.sbgPort == 1000 && c.handover.matchmakingPort == 1001);
-	CHECK(c.handover.madsPort == 1000);
+	CHECK(c.handover.madsPort == 1002);
 	CHECK(c.handover.logSink == LOG_SINK_FILE && !c.handover.logLevelSet);
 	CHECK(c.handover.logDebugAlso == LOG_LEVEL_WARN && c.handover.logBufferKb == 2048);
 	CHECK(strcmp(c.logDir, "1vs100Reborn\\logs") == 0 && c.logKeep == 10);

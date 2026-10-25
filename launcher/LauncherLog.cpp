@@ -10,7 +10,6 @@
 
 #define LOG_SEQUENCE_FILE "next.txt"
 #define LOG_LATEST_FILE "latest.txt"
-#define LOG_LEVEL_INFO_VALUE 2 /* LOG_LEVEL_INFO: every launcher line */
 
 /* Before config, launcher routing, then the sysdll. */
 enum LogPhase { LOG_BEFORE_CONFIG, LOG_LAUNCHER, LOG_THROUGH_SYSDLL };
@@ -27,8 +26,8 @@ static RevivalLogLine_t g_SysdllLog = NULL;
 
 void Log(const CHAR *fmt, ...)
 {
-	CHAR buf[512];
-	CHAR line[640];
+	CHAR buf[LOG_LINE_BYTES];
+	CHAR line[LOG_LINE_BYTES + 64];
 	DWORD pos = 0;
 	va_list args;
 	va_start(args, fmt);
@@ -83,10 +82,10 @@ VOID LauncherLog_Open(RevivalLaunchConfig *config, const CHAR *logDir, DWORD log
 	DWORD runNumber = 1; /* next.txt missing or invalid */
 	g_LogSink = config->logSink;
 	g_LogWanted = config->logSink != 0 &&
-		(config->logLevel == 0 || config->logLevel - 1 >= LOG_LEVEL_INFO_VALUE) &&
+		(config->logLevel == 0 || config->logLevel - 1 >= LOG_LEVEL_INFO) &&
 		LogConfig_TagAllowed(config->logTags, "launcher");
 	g_LogDebugAlso = !(config->logSink & LOG_SINK_DEBUG) &&
-		config->logDebugAlso != LOG_LEVEL_NONE && config->logDebugAlso >= LOG_LEVEL_INFO_VALUE;
+		config->logDebugAlso != LOG_LEVEL_NONE && config->logDebugAlso >= LOG_LEVEL_INFO;
 	g_LogPhase = LOG_LAUNCHER;
 	if (!(config->logSink & LOG_SINK_FILE))
 		return;

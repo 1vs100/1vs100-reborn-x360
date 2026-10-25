@@ -3,12 +3,16 @@
 
 /* Shared log settings: parsed by the launcher, used by the sysdll. */
 
+enum LogLevel { LOG_LEVEL_ERROR, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG };
+
 /* Bits; 0 is off. */
 #define LOG_SINK_DEBUG 1u
 #define LOG_SINK_FILE 2u
 
+#define LOG_LINE_BYTES 512 /* one line with its newline and NUL */
 #define LOG_PATH_BYTES 160 /* device path */
 #define LOG_TAGS_BYTES 128 /* as written */
+#define LOG_DEFAULT_FLUSH_MS 1000
 
 /* debug, file, both, off. */
 BOOL LogConfig_ParseSink(const CHAR *v, DWORD n, DWORD *out);

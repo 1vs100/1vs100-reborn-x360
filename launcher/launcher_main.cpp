@@ -369,7 +369,8 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 	config->matchmakingPort = DEFAULT_MATCHMAKING_PORT;
 	Text_Append(config->backendHost, 0, sizeof(config->backendHost), DEFAULT_BACKEND);
 	config->logSink = LOG_SINK_FILE;
-	config->logDebugAlso = 1; /* warn */
+	config->logDebugAlso = LOG_LEVEL_WARN;
+	config->logFlushMs = LOG_DEFAULT_FLUSH_MS;
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
 		LONG got = ReadDeviceFile(path, config->patchSwitches, sizeof(config->patchSwitches), &st);

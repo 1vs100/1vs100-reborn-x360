@@ -1,10 +1,9 @@
 #pragma once
 #include "Format.h"
+#include "LogConfig.h"
 
 /* One line per call, routed by the [log] settings to the debug channel, the log file, or both. */
-/* Format strings have no trailing '\n'; lines over 511 bytes are cut. */
-
-enum LogLevel { LOG_LEVEL_ERROR, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG };
+/* Format strings have no trailing '\n'; lines longer than LOG_LINE_BYTES - 2 are cut. */
 
 VOID Log_Write(LogLevel level, const CHAR *tag, const CHAR *fmt, ...);
 /* NUL-terminated line built elsewhere, routed the same way. Only this and Log_Write call OutputDebugStringA. */

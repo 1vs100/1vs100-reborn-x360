@@ -18,7 +18,6 @@ static const DWORD kDefaultLevel = LOG_LEVEL_INFO;
 static const DWORD kDefaultBufferBytes = 2u * 1024 * 1024;
 static const DWORD kMinBufferBytes = 64u * 1024;
 static const DWORD kMaxBufferBytes = 16u * 1024 * 1024;
-static const DWORD kDefaultFlushMs = 1000;
 static const DWORD kWriterPollMs = 50;
 static const DWORD kRecordHeader = 12; /* tick, thread id, length */
 static const DWORD kPoolTag = 0x51534C47;
@@ -37,7 +36,7 @@ static volatile LONG g_Configured = FALSE;
 static volatile DWORD g_Sink = LOG_SINK_DEBUG | LOG_SINK_FILE;
 static DWORD g_Level = LOG_LEVEL_DEBUG;
 static DWORD g_DebugAlso = LOG_LEVEL_WARN;
-static DWORD g_FlushMs = kDefaultFlushMs;
+static DWORD g_FlushMs = LOG_DEFAULT_FLUSH_MS;
 static CHAR g_Tags[LOG_TAGS_BYTES];
 static CHAR g_File[LOG_PATH_BYTES];
 static DWORD g_FileOffset = 0;
@@ -78,8 +77,8 @@ static BOOL RingPush(const CHAR *text, DWORD len)
 {
 	DWORD header[3], record, used;
 	BOOL pushed = FALSE;
-	if (len > 0xFFFF)
-		len = 0xFFFF;
+	if (len > LOG_LINE_BYTES)
+		len = LOG_LINE_BYTES;
 	header[0] = GetTickCount();
 	header[1] = GetCurrentThreadId();
 	header[2] = len;
@@ -111,7 +110,7 @@ static VOID Log_Route(LogLevel level, const CHAR *text)
 	if (toDebug)
 		OutputDebugStringA(text);
 	if (sink & LOG_SINK_FILE) {
-		RingPush(text, Text_Length(text, 0xFFFF));
+		RingPush(text, Text_Length(text, LOG_LINE_BYTES));
 		if (level == LOG_LEVEL_ERROR)
 			InterlockedExchange(&g_Wake, TRUE);
 	}
@@ -167,7 +166,7 @@ VOID Log_Configure(const LogSettings *settings)
 
 	g_Level = settings->level <= LOG_LEVEL_DEBUG ? settings->level : kDefaultLevel;
 	g_DebugAlso = settings->debugAlso;
-	g_FlushMs = settings->flushMs ? settings->flushMs : kDefaultFlushMs;
+	g_FlushMs = settings->flushMs;
 	g_Tags[0] = 0;
 	if (settings->tags)
 		Text_Append(g_Tags, 0, sizeof(g_Tags), settings->tags);
@@ -214,7 +213,7 @@ VOID Log_Configure(const LogSettings *settings)
 
 
 static CHAR g_Out[64 * 1024];
-static BYTE g_Rec[0x10000 + 4];
+static BYTE g_Rec[LOG_LINE_BYTES];
 
 static NTSTATUS AppendToFile(const CHAR *data, DWORD len)
 {

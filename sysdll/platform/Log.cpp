@@ -32,7 +32,7 @@ VOID Log_RouteBuilt(LogLevel level, const CHAR *text);
 
 VOID Log_Write(LogLevel level, const CHAR *tag, const CHAR *fmt, ...)
 {
-	CHAR buf[512];
+	CHAR buf[LOG_LINE_BYTES];
 	DWORD pos = 0;
 	va_list args;
 

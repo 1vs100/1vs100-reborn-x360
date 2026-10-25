@@ -26,7 +26,7 @@ log_keep=10
 ; RAM buffer for the file in KB, a power of two (64-16384); a full buffer drops lines and says so in the file.
 log_buffer_kb=2048
 ; How often the buffer is written to the file (100-60000 ms).
-log_flush_ms=1000
+log_flush_ms=100
 ; Tags to leave out (-tag) or to keep only (tag): e.g. -netlog,-tlog or qnet,mm,launcher.
 ; Tags: core title patch cave cfg mm qnet net content xam lua netlog launcher xulu tlog
 ;log_tags=

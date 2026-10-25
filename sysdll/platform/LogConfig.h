@@ -12,7 +12,7 @@ enum LogLevel { LOG_LEVEL_ERROR, LOG_LEVEL_WARN, LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
 #define LOG_LINE_BYTES 512 /* one line with its newline and NUL */
 #define LOG_PATH_BYTES 160 /* device path */
 #define LOG_TAGS_BYTES 128 /* as written */
-#define LOG_DEFAULT_FLUSH_MS 1000
+#define LOG_DEFAULT_FLUSH_MS 100
 #define LOG_BUFFER_MIN_KB 64
 #define LOG_BUFFER_MAX_KB 16384
 #define LOG_DEFAULT_BUFFER_KB 2048

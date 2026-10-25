@@ -17,7 +17,7 @@ void TestIni()
 						"sbg_port=1000\r\n"
 						"# another comment = with equals\n"
 						"no equals here\n"
-						"session_id=\t00000000-0000-0000-0000-000000000001";
+						"matchmaking_port=\t1001";
 	DWORD pos = 0;
 	IniLine line;
 
@@ -26,8 +26,7 @@ void TestIni()
 	CHECK(Ini_Next(text, sizeof(text) - 1, &pos, &line));
 	CHECK(Is(line.key, line.keyLen, "sbg_port") && Is(line.value, line.valueLen, "1000"));
 	CHECK(Ini_Next(text, sizeof(text) - 1, &pos, &line));
-	CHECK(Is(line.key, line.keyLen, "session_id") &&
-		Is(line.value, line.valueLen, "00000000-0000-0000-0000-000000000001"));
+	CHECK(Is(line.key, line.keyLen, "matchmaking_port") && Is(line.value, line.valueLen, "1001"));
 	CHECK(!Ini_Next(text, sizeof(text) - 1, &pos, &line));
 	CHECK(!Ini_Next(text, sizeof(text) - 1, &pos, &line));
 

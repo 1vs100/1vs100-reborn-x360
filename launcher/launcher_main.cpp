@@ -467,12 +467,7 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 			SetPort(line, "sbg_port", &config->sbgPort);
 		} else if (Text_EqualsNoCase(line.key, line.keyLen, "matchmaking_port")) {
 			SetPort(line, "matchmaking_port", &config->matchmakingPort);
-		} else if (ReadLogKey(line, config)) {
-		} else if (Text_EqualsNoCase(line.key, line.keyLen, "server_port") ||
-			Text_EqualsNoCase(line.key, line.keyLen, "session_id")) {
-			/* Obsolete: no reader. */
-			Log("Launcher: config: %.*s is obsolete and ignored", (int)line.keyLen, line.key);
-		} else {
+		} else if (!ReadLogKey(line, config)) {
 			Log("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
 		}
 	}

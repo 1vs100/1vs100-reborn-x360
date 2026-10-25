@@ -25,8 +25,6 @@ static BOOL Line(DWORD tick, DWORD tid, const char *text, DWORD cap, const char 
 
 void TestLogConfig()
 {
-	DWORD n = 0;
-
 	CHECK(Sink("debug") == LOG_SINK_DEBUG);
 	CHECK(Sink("FILE") == LOG_SINK_FILE);
 	CHECK(Sink("both") == (LOG_SINK_DEBUG | LOG_SINK_FILE));
@@ -37,10 +35,6 @@ void TestLogConfig()
 	CHECK(Level("info", FALSE) == 2 && Level("debug", FALSE) == 3);
 	CHECK(Level("none", FALSE) == 0xAA && Level("none", TRUE) == LOG_LEVEL_NONE);
 	CHECK(Level("verbose", TRUE) == 0xAA);
-
-	CHECK(LogConfig_ParseNumber("2048", 4, &n) && n == 2048);
-	CHECK(!LogConfig_ParseNumber("", 0, &n) && !LogConfig_ParseNumber("12k", 3, &n));
-	CHECK(!LogConfig_ParseNumber("1234567890", 10, &n));
 
 	/* empty: everything; "-x": all but x; "x" / "+x": only those */
 	CHECK(LogConfig_TagAllowed("", "qnet") && LogConfig_TagAllowed(NULL, "qnet"));

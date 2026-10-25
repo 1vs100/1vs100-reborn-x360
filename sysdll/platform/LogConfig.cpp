@@ -35,21 +35,6 @@ BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out)
 	return FALSE;
 }
 
-BOOL LogConfig_ParseNumber(const CHAR *v, DWORD n, DWORD *out)
-{
-	DWORD i = 0, value = 0;
-	if (n == 0 || n > 9)
-		return FALSE;
-	while (i < n) {
-		if (v[i] < '0' || v[i] > '9')
-			return FALSE;
-		value = value * 10 + (DWORD)(v[i] - '0');
-		i++;
-	}
-	*out = value;
-	return TRUE;
-}
-
 static BOOL IsTagSeparator(CHAR c)
 {
 	return c == ',' || c == ' ' || c == '\t';

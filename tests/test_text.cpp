@@ -73,4 +73,20 @@ void TestText()
 	CHECK(!Text_EqualsNoCase("sbg_por", 7, "sbg_port"));
 	CHECK(!Text_EqualsNoCase("sbg_portx", 9, "sbg_port"));
 	CHECK(Text_EqualsNoCase("", 0, ""));
+
+	{
+		DWORD v = 7;
+		CHECK(Text_ParseUint("1", 1, 1, 65535, &v) && v == 1);
+		CHECK(Text_ParseUint("65535", 5, 1, 65535, &v) && v == 65535);
+		v = 7;
+		CHECK(!Text_ParseUint("0", 1, 1, 65535, &v) && v == 7);
+		CHECK(!Text_ParseUint("65536", 5, 1, 65535, &v) && v == 7);
+		CHECK(!Text_ParseUint("99999999999", 11, 1, 65535, &v));
+		CHECK(!Text_ParseUint("", 0, 0, 10, &v));
+		CHECK(!Text_ParseUint("10a", 3, 0, 100, &v));
+		CHECK(!Text_ParseUint("-1", 2, 0, 100, &v) && v == 7);
+		CHECK(!Text_ParseUint("5", 1, 0, 3, &v));
+		CHECK(Text_ParseUint("0004294967295", 13, 0, 0xFFFFFFFFu, &v) && v == 0xFFFFFFFFu);
+		CHECK(!Text_ParseUint("4294967296", 10, 0, 0xFFFFFFFFu, &v));
+	}
 }

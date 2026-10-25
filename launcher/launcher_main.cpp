@@ -333,10 +333,11 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	return resolved;
 }
 
-static VOID SetPort(const IniLine &line, const CHAR *key, DWORD *port)
+static VOID SetUint(const IniLine &line, DWORD min, DWORD max, DWORD *out)
 {
-	if (!Ini_ParsePort(line.value, line.valueLen, port))
-		Log("Launcher: config: %s is not a port (1-65535), keeping %u", key, *port);
+	if (!Text_ParseUint(line.value, line.valueLen, min, max, out))
+		Log("Launcher: config: %.*s is not %u-%u, keeping %u", (int)line.keyLen, line.key, min, max,
+			*out);
 }
 
 /* log_dir/log_keep are the launcher's own. */
@@ -362,11 +363,12 @@ static BOOL IsLogDir(const CHAR *v, DWORD n)
 static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 {
 	const CHAR *v = line.value;
-	DWORD n = line.valueLen, value;
+	DWORD n = line.valueLen;
 	if (Text_EqualsNoCase(line.key, line.keyLen, "log_sink")) {
 		if (!LogConfig_ParseSink(v, n, &config->logSink))
 			Log("Launcher: config: log_sink is not debug, file, both or off, keeping the default");
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_level")) {
+		DWORD value;
 		if (LogConfig_ParseLevel(v, n, FALSE, &value))
 			config->logLevel = value + 1;
 		else
@@ -377,15 +379,13 @@ static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 			Log("Launcher: config: log_debug_also is not error, warn, info, debug or none, "
 				"keeping warn");
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_buffer_kb")) {
-		if (LogConfig_ParseNumber(v, n, &value) && value >= 64 && value <= 16384)
+		DWORD value;
+		if (Text_ParseUint(v, n, 64, 16384, &value))
 			config->logBufferBytes = value * 1024;
 		else
 			Log("Launcher: config: log_buffer_kb is not 64-16384, keeping the default");
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_flush_ms")) {
-		if (LogConfig_ParseNumber(v, n, &value) && value >= 100 && value <= 60000)
-			config->logFlushMs = value;
-		else
-			Log("Launcher: config: log_flush_ms is not 100-60000, keeping the default");
+		SetUint(line, 100, 60000, &config->logFlushMs);
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_tags")) {
 		if (n < sizeof(config->logTags))
 			Text_Append(config->logTags, 0, n + 1, v);
@@ -401,10 +401,7 @@ static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 			Log("Launcher: config: log_dir is not a plain path below the HDD root, keeping %s",
 				g_LogDir);
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_keep")) {
-		if (LogConfig_ParseNumber(v, n, &value) && value >= 1 && value <= 1000)
-			g_LogKeep = value;
-		else
-			Log("Launcher: config: log_keep is not 1-1000, keeping %u", g_LogKeep);
+		SetUint(line, 1, 1000, &g_LogKeep);
 	} else {
 		return FALSE;
 	}
@@ -464,9 +461,9 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 			}
 			Text_Append(config->backendHost, 0, line.valueLen + 1, line.value);
 		} else if (Text_EqualsNoCase(line.key, line.keyLen, "sbg_port")) {
-			SetPort(line, "sbg_port", &config->sbgPort);
+			SetUint(line, 1, 65535, &config->sbgPort);
 		} else if (Text_EqualsNoCase(line.key, line.keyLen, "matchmaking_port")) {
-			SetPort(line, "matchmaking_port", &config->matchmakingPort);
+			SetUint(line, 1, 65535, &config->matchmakingPort);
 		} else if (!ReadLogKey(line, config)) {
 			Log("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
 		}
@@ -483,7 +480,7 @@ static VOID OpenLogFile(RevivalLaunchConfig *config)
 {
 	CHAR dir[MAX_PATH], path[MAX_PATH], text[96];
 	NTSTATUS st = 0;
-	DWORD runNumber = 1;
+	DWORD runNumber = 1; /* next.txt missing or invalid */
 	g_LogSink = config->logSink;
 	g_LogWanted = config->logSink != 0 &&
 		(config->logLevel == 0 || config->logLevel - 1 >= LOG_LEVEL_INFO_VALUE) &&
@@ -523,8 +520,7 @@ static VOID OpenLogFile(RevivalLaunchConfig *config)
 		DWORD n = 0;
 		while (n < (DWORD)got && text[n] >= '0' && text[n] <= '9')
 			n++;
-		if (!LogConfig_ParseNumber(text, n, &runNumber) || runNumber == 0)
-			runNumber = 1;
+		Text_ParseUint(text, n, 1, 0xFFFFFFFEu, &runNumber);
 	}
 	_snprintf(text, sizeof(text) - 1, "%u\r\n", runNumber + 1);
 	text[sizeof(text) - 1] = 0;

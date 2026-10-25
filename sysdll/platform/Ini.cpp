@@ -49,25 +49,6 @@ BOOL Ini_Next(const CHAR *text, DWORD len, DWORD *pos, IniLine *line)
 	return FALSE;
 }
 
-BOOL Ini_ParsePort(const CHAR *v, DWORD n, DWORD *out)
-{
-	DWORD value = 0, i = 0;
-	if (n == 0)
-		return FALSE;
-	while (i < n) {
-		if (v[i] < '0' || v[i] > '9')
-			return FALSE;
-		value = value * 10 + (DWORD)(v[i] - '0');
-		if (value > 65535)
-			return FALSE;
-		i++;
-	}
-	if (value == 0)
-		return FALSE;
-	*out = value;
-	return TRUE;
-}
-
 BOOL Ini_ParseIPv4(const CHAR *v, DWORD n, DWORD *out)
 {
 	DWORD addr = 0, part = 0, dots = 0, digits = 0, i = 0;

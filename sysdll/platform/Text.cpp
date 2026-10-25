@@ -118,3 +118,24 @@ BOOL Text_EqualsNoCase(const CHAR *a, DWORD aLen, const CHAR *b)
 	}
 	return b[i] == 0;
 }
+
+BOOL Text_ParseUint(const CHAR *v, DWORD n, DWORD min, DWORD max, DWORD *out)
+{
+	DWORD value = 0, i = 0;
+	if (n == 0)
+		return FALSE;
+	while (i < n) {
+		DWORD digit;
+		if (v[i] < '0' || v[i] > '9')
+			return FALSE;
+		digit = (DWORD)(v[i] - '0');
+		if (digit > max || value > (max - digit) / 10)
+			return FALSE;
+		value = value * 10 + digit;
+		i++;
+	}
+	if (value < min)
+		return FALSE;
+	*out = value;
+	return TRUE;
+}

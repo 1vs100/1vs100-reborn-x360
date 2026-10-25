@@ -16,3 +16,5 @@ CHAR Text_LowerAscii(CHAR c);
 BOOL Text_Contains(const CHAR *haystack, const CHAR *needle);
 BOOL Text_StartsWith(const CHAR *text, const CHAR *prefix);
 BOOL Text_EqualsNoCase(const CHAR *a, DWORD aLen, const CHAR *b);
+/* Decimal digits only, min..max. */
+BOOL Text_ParseUint(const CHAR *v, DWORD n, DWORD min, DWORD max, DWORD *out);

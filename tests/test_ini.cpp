@@ -38,19 +38,6 @@ void TestIni()
 	CHECK(!Ini_Next("", 0, &pos, &line));
 
 	{
-		DWORD port = 7;
-		CHECK(Ini_ParsePort("1", 1, &port) && port == 1);
-		CHECK(Ini_ParsePort("65535", 5, &port) && port == 65535);
-		port = 7;
-		CHECK(!Ini_ParsePort("0", 1, &port) && port == 7);
-		CHECK(!Ini_ParsePort("65536", 5, &port) && port == 7);
-		CHECK(!Ini_ParsePort("70000", 5, &port));
-		CHECK(!Ini_ParsePort("99999999999", 11, &port));
-		CHECK(!Ini_ParsePort("", 0, &port));
-		CHECK(!Ini_ParsePort("10a", 3, &port));
-		CHECK(!Ini_ParsePort("-1", 2, &port) && port == 7);
-	}
-	{
 		DWORD a = 7;
 		CHECK(Ini_ParseIPv4("192.168.42.1", 12, &a) && a == 0xC0A82A01u);
 		CHECK(Ini_ParseIPv4("0.0.0.0", 7, &a) && a == 0);

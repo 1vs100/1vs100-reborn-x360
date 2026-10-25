@@ -15,8 +15,6 @@ BOOL LogConfig_ParseSink(const CHAR *v, DWORD n, DWORD *out);
 /* error, warn, info, debug; with allowNone, also none. */
 #define LOG_LEVEL_NONE 0xFFFFFFFFu
 BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out);
-/* Digits only, at most 9. */
-BOOL LogConfig_ParseNumber(const CHAR *v, DWORD n, DWORD *out);
 
 /* "-tag" drops, "tag"/"+tag" keeps; empty keeps all. Case-insensitive. */
 BOOL LogConfig_TagAllowed(const CHAR *filter, const CHAR *tag);

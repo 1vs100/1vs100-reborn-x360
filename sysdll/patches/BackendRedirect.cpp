@@ -76,11 +76,33 @@ static VOID InstallSbgRawResolve(const PatchDescriptor *self)
 	InstallJumpSite(SITE_SBG_RAW_RESOLVE, (DWORD)TitleRawResolveStub, self->id);
 }
 
-/* Same contract as the raw resolver: same stub. Port 1000 left as is. */
+/* Same contract as the raw resolver: same stub. Its port is SbgPort's. */
 static VOID InstallSbgSessionResolve(const PatchDescriptor *self)
 {
 	if (TitleSite(SITE_SBG_SESSION_RESOLVE))
 		InstallJumpSite(SITE_SBG_SESSION_RESOLVE, (DWORD)TitleRawResolveStub, self->id);
+}
+
+/* li rD,port: opcode and rD kept from the original. A missing site reports skipped. */
+static VOID PokeSbgPort(SiteId id, const char *name)
+{
+	const SiteSpec *site = TitleSite(id);
+	BYTE insn[4] = {0};
+	if (site != NULL && site->expect != NULL && site->expectSize == sizeof(insn)) {
+		insn[0] = site->expect[0];
+		insn[1] = site->expect[1];
+		insn[2] = (BYTE)(g_RevivalSbgPort >> 8);
+		insn[3] = (BYTE)g_RevivalSbgPort;
+	}
+	ApplyPokeSite(id, insn, sizeof(insn), name);
+}
+
+/* Both connect paths store the port the game passes; 1149 has no direct path. */
+static VOID InstallSbgPort(const PatchDescriptor *self)
+{
+	(void)self;
+	PokeSbgPort(SITE_SBG_PORT_LSP, "SBG port (XLSP lookup)");
+	PokeSbgPort(SITE_SBG_PORT_DIRECT, "SBG port (GameServiceIpAddress)");
 }
 
 /* r3=request; its slot's port, or -1 without one. Slots default to 1000; a 4113 reply may set them. */
@@ -183,6 +205,9 @@ static const PatchDescriptor kRows[] = {
 	{"SbgSessionResolve", "sbg_session_resolve", ON_TITLE,
 		"RegisterMasterUser's SBG resolver answers with the backend address (1149)",
 		InstallSbgSessionResolve},
+	{"SBG port", "sbg_port", ON_TITLE,
+		"SBG connects use [backend] sbg_port, on the XLSP and GameServiceIpAddress paths",
+		InstallSbgPort},
 	{"XlspLookup", "xlsp_lookup", ON_TITLE,
 		"XLSP lookups of service 584A07DB answer with the backend; its NTP connect is skipped (1149)",
 		InstallXlspLookup},

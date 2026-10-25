@@ -9,6 +9,8 @@
 /* Host as written may be at most this many chars ("http://" + host + "/grid/v1" + NUL in 32 bytes). */
 #define REVIVAL_GRID_HOST_MAX 16
 #define REVIVAL_HOST_BYTES (REVIVAL_GRID_HOST_MAX + 1)
+/* sbg_port becomes a signed 16-bit li immediate. */
+#define REVIVAL_SBG_PORT_MAX 32767
 
 struct RevivalLaunchConfig {
 	DWORD size;          /* sizeof(RevivalLaunchConfig) */

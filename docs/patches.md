@@ -32,29 +32,30 @@ the "Off for" column lists the builds whose profile turns it off on purpose (`wh
 | 21 | `XNetServerToInAddr` | `xnet_server_to_inaddr` | title | - | The title's XNetServerToInAddr wrapper returns the address it was given | `patches/BackendRedirect.cpp` |
 | 22 | `SbgRawResolve` | `sbg_raw_resolve` | title | - | The SBG raw resolver answers with the backend address | `patches/BackendRedirect.cpp` |
 | 23 | `SbgSessionResolve` | `sbg_session_resolve` | title | - | RegisterMasterUser's SBG resolver answers with the backend address (1149) | `patches/BackendRedirect.cpp` |
-| 24 | `XlspLookup` | `xlsp_lookup` | title | - | XLSP lookups of service 584A07DB answer with the backend; its NTP connect is skipped (1149) | `patches/BackendRedirect.cpp` |
-| 25 | `Massive server port` | `mads_port` | title | - | Massive ad server connections use [backend] mads_port | `patches/BackendRedirect.cpp` |
-| 26 | `Grid default URL` | `gridurl` | title | - | The Grid client's built-in URL points at the backend (1149) | `patches/BackendRedirect.cpp` |
-| 27 | `GRID RSA public keys` | `grid_rsa_keys` | title | - | Both Microsoft Grid RSA public moduli are replaced by the LAN key (1317) | `patches/BackendRedirect.cpp` |
-| 28 | `local account locale` | `account_locale` | title | - | The title's account/locale request completes locally from the console's locale | `patches/LocaleAccount.cpp` |
-| 29 | `liveless XSessionCreate` | `xsession_create` | title | - | XSessionCreate completes synchronously with a null handle and a registered fake key | `patches/LivelessSession.cpp` |
-| 30 | `liveless XSession joined` | `xsession_joined` | title | - | After a liveless host completion, sets the session's XSession-joined flag | `patches/LivelessSession.cpp` |
-| 31 | `liveless remote update` | `remote_update` | title | - | A failed update of the remote machines (native members) does not end the liveless session | `patches/LivelessSession.cpp` |
-| 32 | `QNet leave ordering` | `qnet_leave_order` | title | - | LeaveGame removes native members and arms the wrapper's wait before the call | `patches/LivelessSession.cpp` |
-| 33 | `QNet StartGame ordering` | `qnet_startgame_order` | title | - | StartGame arms the wrapper's wait before the call (the event fires inside it) | `patches/LivelessSession.cpp` |
-| 34 | `QNet EndGame ordering` | `qnet_endgame_order` | title | - | EndGame arms the wrapper's wait before the call (the event fires inside it) | `patches/LivelessSession.cpp` |
-| 35 | `QNet native remote member` | `native_remote_members` | title | - | Session::Update joins roster players as native members; missing 10 s is removed | `patches/NativeRemoteMembers.cpp` |
-| 36 | `QNet send data drop` | `qnet_send_relay` | title | - | With a remote peer present, QNet sends go through the matchmaking relay, not XAM | `patches/QNetRelay.cpp` |
-| 37 | `main-thread pump (QNet relay delivery)` | `qnet_relay_delivery` | title | - | Relayed payloads are posted as network events on the title's main thread | `patches/QNetRelay.cpp` |
-| 38 | `avatar relay` | `avatar_relay` | title | - | Remote avatar requests are answered with metadata relayed by the matchmaking server | `patches/QNetRelay.cpp` |
-| 39 | `PTNTP debug trap nop` | `ptntp_trap` | title | - | The PTNTP/XULU print sink's twui trap becomes a nop (it halts a console without a debugger) | `patches/TitleFixes.cpp` |
-| 40 | `unsecured banner hide` | `banner` | title | - | XuiShell never draws the blinking CONSOLE IS UNSECURED banner | `patches/TitleFixes.cpp` |
-| 41 | `XMsgInProcessCall` | `xmsg_inprocess_call` | title | - | Dispatches XMsgInProcessCall results to the enumeration fallback; logs XLSP lookups | `patches/ContentPackages.cpp` |
-| 42 | `ContentId pass-through` | `contentid_passthrough` | title | v2.0.1149.0: 1149 encodes ContentId correctly | Offers.ContentId gets the Grid's 40-digit text unchanged (1317's parser re-encodes it) | `patches/ContentPackages.cpp` |
-| 43 | `ContentId name-length fix` | `content_name_length` | title | v2.0.1149.0: 1149 encodes ContentId correctly | Package():IsPresentQuery accepts 40- or 42-character package file names (1317) | `patches/ContentPackages.cpp` |
-| 44 | `ContentId TitleID fix` | `content_titleid` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | The content enumerator wrapper passes the content title id instead of 0 (1317) | `patches/ContentPackages.cpp` |
-| 45 | `ContentId DeviceId fix` | `content_deviceid` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | Package():GetDeviceID enumerates XCONTENTDEVICE_ALL instead of device 0 (1317) | `patches/ContentPackages.cpp` |
-| 46 | `Content enumeration fallback` | `content_fallback` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | A failed content enumeration (0x2000E, 0x80070012) is answered from the real package files | `patches/ContentPackages.cpp` |
+| 24 | `SBG port` | `sbg_port` | title | - | SBG connects use [backend] sbg_port, on the XLSP and GameServiceIpAddress paths | `patches/BackendRedirect.cpp` |
+| 25 | `XlspLookup` | `xlsp_lookup` | title | - | XLSP lookups of service 584A07DB answer with the backend; its NTP connect is skipped (1149) | `patches/BackendRedirect.cpp` |
+| 26 | `Massive server port` | `mads_port` | title | - | Massive ad server connections use [backend] mads_port | `patches/BackendRedirect.cpp` |
+| 27 | `Grid default URL` | `gridurl` | title | - | The Grid client's built-in URL points at the backend (1149) | `patches/BackendRedirect.cpp` |
+| 28 | `GRID RSA public keys` | `grid_rsa_keys` | title | - | Both Microsoft Grid RSA public moduli are replaced by the LAN key (1317) | `patches/BackendRedirect.cpp` |
+| 29 | `local account locale` | `account_locale` | title | - | The title's account/locale request completes locally from the console's locale | `patches/LocaleAccount.cpp` |
+| 30 | `liveless XSessionCreate` | `xsession_create` | title | - | XSessionCreate completes synchronously with a null handle and a registered fake key | `patches/LivelessSession.cpp` |
+| 31 | `liveless XSession joined` | `xsession_joined` | title | - | After a liveless host completion, sets the session's XSession-joined flag | `patches/LivelessSession.cpp` |
+| 32 | `liveless remote update` | `remote_update` | title | - | A failed update of the remote machines (native members) does not end the liveless session | `patches/LivelessSession.cpp` |
+| 33 | `QNet leave ordering` | `qnet_leave_order` | title | - | LeaveGame removes native members and arms the wrapper's wait before the call | `patches/LivelessSession.cpp` |
+| 34 | `QNet StartGame ordering` | `qnet_startgame_order` | title | - | StartGame arms the wrapper's wait before the call (the event fires inside it) | `patches/LivelessSession.cpp` |
+| 35 | `QNet EndGame ordering` | `qnet_endgame_order` | title | - | EndGame arms the wrapper's wait before the call (the event fires inside it) | `patches/LivelessSession.cpp` |
+| 36 | `QNet native remote member` | `native_remote_members` | title | - | Session::Update joins roster players as native members; missing 10 s is removed | `patches/NativeRemoteMembers.cpp` |
+| 37 | `QNet send data drop` | `qnet_send_relay` | title | - | With a remote peer present, QNet sends go through the matchmaking relay, not XAM | `patches/QNetRelay.cpp` |
+| 38 | `main-thread pump (QNet relay delivery)` | `qnet_relay_delivery` | title | - | Relayed payloads are posted as network events on the title's main thread | `patches/QNetRelay.cpp` |
+| 39 | `avatar relay` | `avatar_relay` | title | - | Remote avatar requests are answered with metadata relayed by the matchmaking server | `patches/QNetRelay.cpp` |
+| 40 | `PTNTP debug trap nop` | `ptntp_trap` | title | - | The PTNTP/XULU print sink's twui trap becomes a nop (it halts a console without a debugger) | `patches/TitleFixes.cpp` |
+| 41 | `unsecured banner hide` | `banner` | title | - | XuiShell never draws the blinking CONSOLE IS UNSECURED banner | `patches/TitleFixes.cpp` |
+| 42 | `XMsgInProcessCall` | `xmsg_inprocess_call` | title | - | Dispatches XMsgInProcessCall results to the enumeration fallback; logs XLSP lookups | `patches/ContentPackages.cpp` |
+| 43 | `ContentId pass-through` | `contentid_passthrough` | title | v2.0.1149.0: 1149 encodes ContentId correctly | Offers.ContentId gets the Grid's 40-digit text unchanged (1317's parser re-encodes it) | `patches/ContentPackages.cpp` |
+| 44 | `ContentId name-length fix` | `content_name_length` | title | v2.0.1149.0: 1149 encodes ContentId correctly | Package():IsPresentQuery accepts 40- or 42-character package file names (1317) | `patches/ContentPackages.cpp` |
+| 45 | `ContentId TitleID fix` | `content_titleid` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | The content enumerator wrapper passes the content title id instead of 0 (1317) | `patches/ContentPackages.cpp` |
+| 46 | `ContentId DeviceId fix` | `content_deviceid` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | Package():GetDeviceID enumerates XCONTENTDEVICE_ALL instead of device 0 (1317) | `patches/ContentPackages.cpp` |
+| 47 | `Content enumeration fallback` | `content_fallback` | title | v2.0.1149.0: content enumeration fixes off for 1149 pending investigation | A failed content enumeration (0x2000E, 0x80070012) is answered from the real package files | `patches/ContentPackages.cpp` |
 
 ## Diagnostics build only (`xdk-diagnostics` preset)
 

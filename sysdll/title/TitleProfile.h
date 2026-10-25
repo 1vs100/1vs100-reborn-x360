@@ -58,6 +58,8 @@ enum SiteId {
 	SITE_LUA_ARG_COUNT,
 	SITE_LUA_TO_LSTRING,
 	SITE_SBG_SESSION_RESOLVE,
+	SITE_SBG_PORT_LSP,    /* li of the SBG port after the XLSP lookup */
+	SITE_SBG_PORT_DIRECT, /* li of the SBG port for engineConfig GameServiceIpAddress */
 	SITE_XLSP_LOOKUP,
 	SITE_GRID_DEFAULT_URL,
 	SITE_NTP_XNET_CONNECT_CALL,

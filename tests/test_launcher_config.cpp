@@ -34,6 +34,8 @@ void TestLauncherConfig()
 	CHECK(strcmp(c.handover.backendHost, "10.0.0.2") == 0);
 	CHECK(c.handover.sbgPort == 2000 && c.handover.matchmakingPort == 2001);
 	CHECK(c.handover.madsPort == 2002);
+	CHECK(Parse("[backend]\nhost=h\nsbg_port=32767\n", &c) && c.handover.sbgPort == 32767);
+	CHECK(!Parse("[backend]\nhost=h\nsbg_port=32768\n", &c) && g_Warnings == 1);
 
 	CHECK(Parse("[Backend]\nHost=backend.lan\n", &c));
 	CHECK(g_Warnings == 0 && c.hostIsName && strcmp(c.handover.backendHost, "backend.lan") == 0);

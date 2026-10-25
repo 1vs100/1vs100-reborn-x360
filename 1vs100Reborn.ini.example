@@ -7,6 +7,7 @@
 ; Required. IPv4 address or host name, at most 16 characters. A name is resolved through the
 ; console's DNS server; the launch is refused when it does not resolve.
 host=192.168.1.10
+; SBG (XLSP game service) port on the host above, 1-32767. Both builds, both connect paths.
 sbg_port=1000
 matchmaking_port=1001
 ; Massive in-game ad server, on the host above.

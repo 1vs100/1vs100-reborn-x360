@@ -86,8 +86,9 @@ static BOOL SetBackendKey(const IniLine &line, LauncherConfig *launcher, BOOL *h
 		*hostSet = TRUE;
 		return TRUE;
 	}
+	/* Patched into a li immediate; 1149's setter refuses a negative port. */
 	if (IsKey(line, "sbg_port"))
-		return SetUint(line, 1, 65535, &config->sbgPort, warn);
+		return SetUint(line, 1, REVIVAL_SBG_PORT_MAX, &config->sbgPort, warn);
 	if (IsKey(line, "matchmaking_port"))
 		return SetUint(line, 1, 65535, &config->matchmakingPort, warn);
 	if (IsKey(line, "mads_port"))

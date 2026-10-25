@@ -33,6 +33,7 @@ static const BYTE kSbgSessionResolve[24] = {0x7D, 0x88, 0x02, 0xA6, 0x91, 0x81, 
 	0xC1, 0xFF, 0xE8, 0xFB, 0xE1, 0xFF, 0xF0, 0x94, 0x21, 0xFF, 0x90, 0x80, 0x63, 0x00, 0x48};
 static const BYTE kXlspLookup[16] = {
 	0x7D, 0x88, 0x02, 0xA6, 0x91, 0x81, 0xFF, 0xF8, 0x94, 0x21, 0xFF, 0xA0, 0x7C, 0x86, 0x23, 0x78};
+static const BYTE kSbgPortLsp[4] = {0x38, 0xA0, 0x03, 0xE8}; /* li r5,1000 */
 static const BYTE kNtpXNetConnectCall[4] = {0x48, 0x23, 0x82, 0x51}; /* bl sub_8246ABA0 */
 /* Whole 32-byte slot, NUL padding included. */
 static const BYTE kGridDefaultUrl[32] = {'h', 't', 't', 'p', ':', '/', '/', 'g', 'r', 'i', 'd', '.',
@@ -168,6 +169,7 @@ static const SiteSpec kSites[] = {
 	SITE_REF(SITE_LUA_TO_LSTRING, 0x82135A98u, kLuaToLString), /* lua_tolstring-equivalent */
 	SITE(SITE_SBG_SESSION_RESOLVE, 0x8223ABB0u,
 		kSbgSessionResolve), /* RegisterMasterUser SBG connect path */
+	SITE(SITE_SBG_PORT_LSP, 0x8223ADB0u, kSbgPortLsp),
 	SITE(SITE_XLSP_LOOKUP, 0x824685C0u,
 		kXlspLookup),
 	SITE(SITE_GRID_DEFAULT_URL, 0x82018B70u,
@@ -199,7 +201,8 @@ static const SiteSpec kSites[] = {
 	SITE(SITE_PEER_STOP, 0x82529158u, kPeerStop),
 };
 
-/* Absent in this build: no Grid RSA strings, DebugLog writer, XULU sink, or devkit banner. */
+/* Absent in this build: no Grid RSA strings, DebugLog writer, XULU sink, devkit banner, or
+ * GameServiceIpAddress SBG connect. */
 
 /* Skipped by decision. */
 static const PolicyOff kPolicyOff[] = {

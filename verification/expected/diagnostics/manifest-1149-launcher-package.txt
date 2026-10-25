@@ -57,6 +57,8 @@ pass phase=title build=v2.0.1149.0
   QNet leave ordering | installed | 8222F538 | -
   QNet native remote member | installed | 8251CEC8 | -
   QNet send data drop | installed | 82231358 | -
+  SBG port (GameServiceIpAddress) | skipped | 00000000 | site
+  SBG port (XLSP lookup) | already | 8223ADB0 | -
   SbgRawResolve | installed | 82239988 | -
   SbgSessionResolve | installed | 8223ABB0 | -
   XMsgInProcessCall | installed | 000001F4 | import

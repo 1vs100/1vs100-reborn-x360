@@ -8,6 +8,7 @@
 DWORD g_RevivalInAddr = 0;
 DWORD g_RevivalSbgPort = 0;
 DWORD g_RevivalMatchmakingPort = 0;
+DWORD g_RevivalMadsPort = 0;
 CHAR g_RevivalHost[REVIVAL_HOST_BYTES] = {0};
 static volatile LONG g_Received = FALSE;
 
@@ -33,6 +34,7 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 	g_RevivalInAddr = addr;
 	g_RevivalSbgPort = config->sbgPort;
 	g_RevivalMatchmakingPort = config->matchmakingPort;
+	g_RevivalMadsPort = config->madsPort;
 	SetPatchSwitches(config->patchSwitches);
 	{
 		LogSettings log;
@@ -50,9 +52,9 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 	/* Publish before the flag. */
 	Text_Append(g_RevivalHost, 0, sizeof(g_RevivalHost), config->backendHost);
 	InterlockedExchange(&g_Received, TRUE);
-	LOG_INFO("cfg", "config from the launcher: host=%s (%u.%u.%u.%u) sbg=%u mm=%u",
+	LOG_INFO("cfg", "config from the launcher: host=%s (%u.%u.%u.%u) sbg=%u mm=%u mads=%u",
 		g_RevivalHost, addr >> 24, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF,
-		g_RevivalSbgPort, g_RevivalMatchmakingPort);
+		g_RevivalSbgPort, g_RevivalMatchmakingPort, g_RevivalMadsPort);
 	return TRUE;
 }
 

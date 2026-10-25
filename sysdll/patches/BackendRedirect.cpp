@@ -83,6 +83,24 @@ static VOID InstallSbgSessionResolve(const PatchDescriptor *self)
 		InstallJumpSite(SITE_SBG_SESSION_RESOLVE, (DWORD)TitleRawResolveStub, self->id);
 }
 
+/* r3=request; its slot's port, or -1 without one. Slots default to 1000; a 4113 reply may set them. */
+typedef int (*MassiveServerPort_t)(void *request);
+static MassiveServerPort_t g_MassiveServerPortOriginal = NULL;
+
+/* Polled while connecting: no log line here. */
+static int MassiveServerPortHook(void *request)
+{
+	int port = g_MassiveServerPortOriginal ? g_MassiveServerPortOriginal(request) : -1;
+	return port < 0 ? port : (int)g_RevivalMadsPort;
+}
+
+static VOID InstallMassiveServerPort(const PatchDescriptor *self)
+{
+	if (HOOK_SITE(SITE_MASSIVE_SERVER_PORT, MassiveServerPortHook, g_MassiveServerPortOriginal,
+			self->id))
+		LOG_INFO("net", "Massive server port -> %u", g_RevivalMadsPort);
+}
+
 /* Built-in URL needs Live DNS; point it at the backend host. Only the host name is used, never a bare IP. */
 /* FALSE when the host is empty or would not fit. */
 static BOOL BuildGridUrl(const CHAR *host, CHAR *url, DWORD cap)
@@ -168,6 +186,8 @@ static const PatchDescriptor kRows[] = {
 	{"XlspLookup", "xlsp_lookup", ON_TITLE,
 		"XLSP lookups of service 584A07DB answer with the backend; its NTP connect is skipped (1149)",
 		InstallXlspLookup},
+	{"Massive server port", "mads_port", ON_TITLE,
+		"Massive ad server connections use [backend] mads_port", InstallMassiveServerPort},
 	{"Grid default URL", "gridurl", ON_TITLE,
 		"The Grid client's built-in URL points at the backend (1149)", InstallGridUrl},
 	{"GRID RSA public keys", "grid_rsa_keys", ON_TITLE,

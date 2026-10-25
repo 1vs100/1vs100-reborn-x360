@@ -6,6 +6,7 @@
 extern DWORD g_RevivalInAddr;
 extern DWORD g_RevivalSbgPort;
 extern DWORD g_RevivalMatchmakingPort;
+extern DWORD g_RevivalMadsPort;
 extern CHAR g_RevivalHost[REVIVAL_HOST_BYTES]; /* host= as written */
 
 BOOL RevivalConfigReceived();

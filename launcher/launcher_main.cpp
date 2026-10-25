@@ -307,8 +307,8 @@ static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 		return L"1 vs 100: 1vs100Reborn.ini is incomplete or invalid, see the log";
 	if (config->hostIsName && !ResolveHost(handover->backendHost, &handover->backendInAddr))
 		return L"1 vs 100: the backend host in 1vs100Reborn.ini did not resolve";
-	Log("Launcher: config: host=%s (%08X) sbg=%u mm=%u", handover->backendHost,
-		handover->backendInAddr, handover->sbgPort, handover->matchmakingPort);
+	Log("Launcher: config: host=%s (%08X) sbg=%u mm=%u mads=%u", handover->backendHost,
+		handover->backendInAddr, handover->sbgPort, handover->matchmakingPort, handover->madsPort);
 	return NULL;
 }
 

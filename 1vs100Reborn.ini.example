@@ -9,6 +9,8 @@
 host=192.168.1.10
 sbg_port=1000
 matchmaking_port=1001
+; Massive in-game ad server, on the host above.
+mads_port=1000
 
 [log]
 ; off | debug | file | both. file: HDD, does not slow the game; debug: debug channel (XBDM).

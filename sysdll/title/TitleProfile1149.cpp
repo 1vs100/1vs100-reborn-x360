@@ -39,6 +39,8 @@ static const BYTE kGridDefaultUrl[32] = {'h', 't', 't', 'p', ':', '/', '/', 'g',
 	'x', 'b', 'o', 'x', '.', 'c', 'o', 'm', '/', 'g', 'r', 'i', 'd', '/', 'v', '1', 0, 0, 0, 0};
 static const BYTE kMassiveInitialize[16] = {
 	0x7D, 0x88, 0x02, 0xA6, 0x4B, 0xFB, 0xBE, 0x55, 0x94, 0x21, 0xFF, 0x70, 0x3F, 0xE0, 0x82, 0xA1};
+static const BYTE kMassiveServerPort[16] = {
+	0x7D, 0x88, 0x02, 0xA6, 0x4B, 0xFB, 0x3C, 0x19, 0x94, 0x21, 0xFF, 0x90, 0x7C, 0x7D, 0x1B, 0x78};
 static const BYTE kLuaPrintSink[16] = {
 	0x7D, 0x88, 0x02, 0xA6, 0x48, 0x35, 0x18, 0x89, 0x94, 0x21, 0xFF, 0x60, 0x7C, 0x7F, 0x1B, 0x78};
 static const BYTE kAvatarSystemInit[16] = {
@@ -153,6 +155,8 @@ static const SiteSpec kSites[] = {
 		kMassiveInitialize), /* XMassiveAdClient::Initialize */
 	SITE(SITE_MASSIVE_DNS_THREAD_START, 0x824FB140u,
 		kSig_StdPrologueR30R31), /* spawns the Massive DNS thread */
+	SITE(SITE_MASSIVE_SERVER_PORT, 0x824FB3C0u,
+		kMassiveServerPort), /* NetworkManager::GetServerPortU16 */
 	SITE(SITE_NULLSUB1_LOGGER, 0x82110000u,
 		kSig_Blr),
 	SITE(SITE_NULLSUB5_LOGGER, 0x82120BB8u,

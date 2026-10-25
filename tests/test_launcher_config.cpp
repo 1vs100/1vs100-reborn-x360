@@ -23,14 +23,17 @@ void TestLauncherConfig()
 	CHECK(!Parse("", &c) && g_Warnings == 1 && c.handover.backendHost[0] == 0);
 	CHECK(c.handover.size == sizeof(c.handover));
 	CHECK(c.handover.sbgPort == 1000 && c.handover.matchmakingPort == 1001);
+	CHECK(c.handover.madsPort == 1000);
 	CHECK(c.handover.logSink == LOG_SINK_FILE && !c.handover.logLevelSet);
 	CHECK(c.handover.logDebugAlso == LOG_LEVEL_WARN && c.handover.logBufferKb == 2048);
 	CHECK(strcmp(c.logDir, "1vs100Reborn\\logs") == 0 && c.logKeep == 10);
 
-	CHECK(Parse("[backend]\nhost=10.0.0.2\nsbg_port=2000\nmatchmaking_port=2001\n", &c));
+	CHECK(Parse("[backend]\nhost=10.0.0.2\nsbg_port=2000\nmatchmaking_port=2001\nmads_port=2002\n",
+		&c));
 	CHECK(g_Warnings == 0 && !c.hostIsName && c.handover.backendInAddr == 0x0A000002u);
 	CHECK(strcmp(c.handover.backendHost, "10.0.0.2") == 0);
 	CHECK(c.handover.sbgPort == 2000 && c.handover.matchmakingPort == 2001);
+	CHECK(c.handover.madsPort == 2002);
 
 	CHECK(Parse("[Backend]\nHost=backend.lan\n", &c));
 	CHECK(g_Warnings == 0 && c.hostIsName && strcmp(c.handover.backendHost, "backend.lan") == 0);

@@ -13,6 +13,7 @@ pass phase=title build=v2.0.1317.0
   GRID RSA public key A | installed | 820A2420 | -
   GRID RSA public key B | installed | 820A24D0 | -
   Grid default URL | skipped | 00000000 | site
+  Massive server port | installed | 82545448 | -
   NetDll_XNetQosLookup | installed | 00000046 | import
   NetDll_XNetQosRelease | installed | 00000048 | import
   NetDll_XNetQosServiceLookup | installed | 00000047 | import

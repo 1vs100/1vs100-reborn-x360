@@ -4,6 +4,7 @@
 
 #define DEFAULT_SBG_PORT 1000
 #define DEFAULT_MATCHMAKING_PORT 1001
+#define DEFAULT_MADS_PORT 1000
 #define DEFAULT_LOG_DIR "1vs100Reborn\\logs"
 #define DEFAULT_LOG_KEEP 10
 
@@ -89,6 +90,8 @@ static BOOL SetBackendKey(const IniLine &line, LauncherConfig *launcher, BOOL *h
 		return SetUint(line, 1, 65535, &config->sbgPort, warn);
 	if (IsKey(line, "matchmaking_port"))
 		return SetUint(line, 1, 65535, &config->matchmakingPort, warn);
+	if (IsKey(line, "mads_port"))
+		return SetUint(line, 1, 65535, &config->madsPort, warn);
 	return Unknown(line, warn);
 }
 
@@ -155,6 +158,7 @@ BOOL LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher,
 	config->size = sizeof(*config);
 	config->sbgPort = DEFAULT_SBG_PORT;
 	config->matchmakingPort = DEFAULT_MATCHMAKING_PORT;
+	config->madsPort = DEFAULT_MADS_PORT;
 	config->logSink = LOG_SINK_FILE;
 	config->logDebugAlso = LOG_LEVEL_WARN;
 	config->logBufferKb = LOG_DEFAULT_BUFFER_KB;

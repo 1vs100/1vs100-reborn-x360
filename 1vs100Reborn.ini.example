@@ -1,6 +1,7 @@
 ; Copy as 1vs100Reborn.ini next to the launcher (looked up first) or to the HDD root.
 ; The launcher reads this file and hands the values to the sysdll.
-; A missing key keeps the value shown here.
+; A missing key keeps the value shown here. An invalid value or unknown key refuses the launch;
+; the log names it.
 
 [backend]
 ; Required. IPv4 address or host name, at most 16 characters. A name is resolved through the

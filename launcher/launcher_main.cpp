@@ -282,7 +282,7 @@ static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 		Log("Launcher: config: no %s read", REVIVAL_INI_FILE);
 		n = 0;
 	}
-	BOOL hostSet = LauncherConfig_Parse(buf, (DWORD)n, config, Log);
+	BOOL valid = LauncherConfig_Parse(buf, (DWORD)n, config, Log);
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
 		LONG got = ReadDeviceFile(
@@ -290,8 +290,8 @@ static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 		handover->patchSwitches[got > 0 ? got : 0] = 0;
 	}
 
-	if (!hostSet)
-		return L"1 vs 100: set [backend] host in 1vs100Reborn.ini";
+	if (!valid)
+		return L"1 vs 100: 1vs100Reborn.ini is incomplete or invalid, see the log";
 	if (config->hostIsName && !ResolveHost(handover->backendHost, &handover->backendInAddr))
 		return L"1 vs 100: the backend host in 1vs100Reborn.ini did not resolve";
 	Log("Launcher: config: host=%s (%08X) sbg=%u mm=%u", handover->backendHost,

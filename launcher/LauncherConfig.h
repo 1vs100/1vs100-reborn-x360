@@ -14,6 +14,6 @@ struct LauncherConfig {
 
 typedef void (*ConfigWarn_t)(const CHAR *fmt, ...);
 
-/* Defaults, then the ini text. A bad value keeps the previous one and goes to warn.
- * FALSE without a valid [backend] host. */
+/* Defaults, then the ini text. FALSE on an invalid value, an unknown key or no [backend] host;
+ * warn names each problem. */
 BOOL LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *config, ConfigWarn_t warn);

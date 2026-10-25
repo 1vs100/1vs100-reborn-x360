@@ -44,16 +44,18 @@ void TestLauncherConfig()
 	CHECK(c.handover.backendHost[0] == 0);
 	CHECK(!Parse("[backend]\nhost=bad_name\n", &c) && g_Warnings == 2);
 
-	Parse("[backend]\nhost=h\n[log]\nsink=both\nlevel=debug\ndebug_also=none\nbuffer_kb=4096\n"
-		  "flush_ms=250\ntags=-netlog\ndir=logs\\run\\\nkeep=3\n",
-		&c);
+	CHECK(Parse("[backend]\nhost=h\n[log]\nsink=both\nlevel=debug\ndebug_also=none\n"
+				"buffer_kb=4096\nflush_ms=250\ntags=-netlog\ndir=logs\\run\\\nkeep=3\n",
+		&c));
 	CHECK(g_Warnings == 0 && c.handover.logSink == (LOG_SINK_DEBUG | LOG_SINK_FILE));
 	CHECK(c.handover.logLevelSet && c.handover.logLevel == LOG_LEVEL_DEBUG);
 	CHECK(c.handover.logDebugAlso == LOG_LEVEL_NONE && c.handover.logBufferKb == 4096);
 	CHECK(c.handover.logFlushMs == 250 && strcmp(c.handover.logTags, "-netlog") == 0);
 	CHECK(strcmp(c.logDir, "logs\\run") == 0 && c.logKeep == 3);
 
-	Parse("[backend]\nhost=h\nsbg_port=0\n[log]\nbuffer_kb=3000\ndir=..\\x\nkeep=0\nbogus=1\n", &c);
-	CHECK(g_Warnings == 5 && c.handover.logBufferKb == 2048 && c.logKeep == 10);
-	CHECK(strcmp(c.logDir, "1vs100Reborn\\logs") == 0 && c.handover.sbgPort == 1000);
+	/* each bad line is reported; a valid host does not make the config valid */
+	CHECK(!Parse("[backend]\nhost=h\nsbg_port=0\n[log]\nbuffer_kb=3000\ndir=..\\x\nkeep=0\n"
+				 "level=verbose\nbogus=1\n[other]\nx=1\n",
+		&c));
+	CHECK(g_Warnings == 7 && !c.handover.logLevelSet);
 }

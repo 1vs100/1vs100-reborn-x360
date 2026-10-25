@@ -75,7 +75,7 @@ BOOL Ini_ParseIPv4(const CHAR *v, DWORD n, DWORD *out)
 		if (i < n && v[i] >= '0' && v[i] <= '9') {
 			part = part * 10 + (DWORD)(v[i] - '0');
 			digits++;
-			if (part > 255)
+			if (digits > 3 || part > 255)
 				return FALSE;
 		} else if (i == n || v[i] == '.') {
 			if (!digits)
@@ -99,7 +99,7 @@ BOOL Ini_IsHostname(const CHAR *v, DWORD n)
 {
 	DWORD i, label = 0;
 	BOOL letter = FALSE;
-	if (n == 0 || n > 63)
+	if (n == 0)
 		return FALSE;
 	for (i = 0; i < n; i++) {
 		CHAR c = v[i];

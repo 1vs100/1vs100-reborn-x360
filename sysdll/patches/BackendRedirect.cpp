@@ -84,7 +84,7 @@ static VOID InstallSbgSessionResolve(const PatchDescriptor *self)
 }
 
 /* Built-in URL needs Live DNS; point it at the backend host. Only the host name is used, never a bare IP. */
-/* FALSE when the host is empty, too long, or would not fit. */
+/* FALSE when the host is empty or would not fit. */
 static BOOL BuildGridUrl(const CHAR *host, CHAR *url, DWORD cap)
 {
 	static const CHAR prefix[] = "http://";
@@ -92,7 +92,7 @@ static BOOL BuildGridUrl(const CHAR *host, CHAR *url, DWORD cap)
 	DWORD hostLen = Text_Length(host, REVIVAL_HOST_BYTES);
 	DWORD pos = 0;
 
-	if (hostLen == 0 || hostLen > REVIVAL_GRID_HOST_MAX)
+	if (hostLen == 0)
 		return FALSE;
 	if (sizeof(prefix) - 1 + hostLen + sizeof(suffix) - 1 >= cap)
 		return FALSE;

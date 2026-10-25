@@ -411,7 +411,7 @@ static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 	return TRUE;
 }
 
-/* ini and disable to config. Missing keys keep defaults. Unresolvable or overlong host refuses the launch. */
+/* ini and disable to config. Missing keys keep defaults. Unresolvable host refuses the launch. */
 static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 {
 	static CHAR buf[REVIVAL_INI_BYTES];
@@ -446,6 +446,11 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 	while (Ini_Next(buf, (DWORD)n, &pos, &line)) {
 		if (Text_EqualsNoCase(line.key, line.keyLen, "address")) {
 			DWORD addr;
+			if (line.valueLen > REVIVAL_GRID_HOST_MAX) {
+				Log("Launcher: config: address longer than %u characters (Grid URL), keeping %s",
+					(unsigned)REVIVAL_GRID_HOST_MAX, config->backendHost);
+				continue;
+			}
 			if (Ini_ParseIPv4(line.value, line.valueLen, &addr)) {
 				config->backendInAddr = addr;
 				isHost = FALSE;
@@ -470,12 +475,6 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 		} else {
 			Log("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
 		}
-	}
-	/* Overlong host is refused here: the sysdll never substitutes the numeric address. */
-	if (Text_Length(config->backendHost, sizeof(config->backendHost)) > REVIVAL_GRID_HOST_MAX) {
-		Log("Launcher: config: address \"%s\" too long for the Grid URL (max %u characters)",
-			config->backendHost, (unsigned)REVIVAL_GRID_HOST_MAX);
-		return FALSE;
 	}
 	if (isHost && !ResolveHost(config->backendHost, &config->backendInAddr))
 		return FALSE;

@@ -62,6 +62,8 @@ void TestIni()
 		CHECK(!Ini_ParseIPv4("1..3.4", 6, &a));
 		CHECK(!Ini_ParseIPv4("1.2.3.4 ", 8, &a));
 		CHECK(!Ini_ParseIPv4("", 0, &a) && a == 7);
+		CHECK(Ini_ParseIPv4("001.002.003.004", 15, &a) && a == 0x01020304u);
+		CHECK(!Ini_ParseIPv4("0001.2.3.4", 10, &a));
 	}
 	CHECK(Ini_IsHostname("backend", 7));
 	CHECK(Ini_IsHostname("1vs100.lan", 10));
@@ -78,6 +80,4 @@ void TestIni()
 	CHECK(!Ini_IsHostname("a.-b", 4));
 	CHECK(!Ini_IsHostname("ho st", 5));
 	CHECK(!Ini_IsHostname("host:80", 7));
-	CHECK(Ini_IsHostname("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 63));
-	CHECK(!Ini_IsHostname("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 64));
 }

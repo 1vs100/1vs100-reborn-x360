@@ -6,9 +6,9 @@
 #define REVIVAL_SET_CONFIG_ORDINAL 1
 #define REVIVAL_LOG_LINE_ORDINAL 2
 #define REVIVAL_PATCH_SWITCHES_BYTES 1024
-#define REVIVAL_HOST_BYTES 64
-/* Host name as written may be at most this many chars ("http://" + host + "/grid/v1" + NUL in 32 bytes). */
+/* Host as written may be at most this many chars ("http://" + host + "/grid/v1" + NUL in 32 bytes). */
 #define REVIVAL_GRID_HOST_MAX 16
+#define REVIVAL_HOST_BYTES (REVIVAL_GRID_HOST_MAX + 1)
 
 struct RevivalLaunchConfig {
 	DWORD size;          /* sizeof(RevivalLaunchConfig) */

@@ -152,6 +152,7 @@ add_xex(1vs100XdkLauncher
     TYPE       EXE
     SOURCES    launcher/launcher_main.cpp
                launcher/DeviceFile.cpp
+               launcher/LauncherLog.cpp
                sysdll/platform/Ini.cpp  # shared with the sysdll: the ini parser and text helpers
                sysdll/platform/Text.cpp
                sysdll/platform/Format.cpp     # LogConfig's line format

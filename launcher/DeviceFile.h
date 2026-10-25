@@ -4,6 +4,8 @@
 
 /* Files by kernel object path. */
 
+#define HDD_ROOT "\\Device\\Harddisk0\\Partition1"
+
 /* Reads up to cap-1 bytes; -1 when it cannot be opened. */
 LONG ReadDeviceFile(const CHAR *path, CHAR *buf, DWORD cap, NTSTATUS *st);
 BOOL DeviceFileExists(const CHAR *path);

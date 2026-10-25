@@ -40,9 +40,10 @@ void TestLogConfig()
 	CHECK(strcmp(LogConfig_LevelName(LOG_LEVEL_WARN), "warn") == 0);
 	CHECK(strcmp(LogConfig_LevelName(LOG_LEVEL_NONE), "none") == 0);
 
-	CHECK(LogConfig_BufferKbValid(64) && LogConfig_BufferKbValid(2048) && LogConfig_BufferKbValid(16384));
-	CHECK(!LogConfig_BufferKbValid(32) && !LogConfig_BufferKbValid(3000) && !LogConfig_BufferKbValid(32768));
-	CHECK(!LogConfig_BufferKbValid(0));
+	CHECK(LogConfig_BufferKbValid(64) && LogConfig_BufferKbValid(16384));
+	CHECK(LogConfig_BufferKbValid(2048) && !LogConfig_BufferKbValid(3000));
+	CHECK(!LogConfig_BufferKbValid(0) && !LogConfig_BufferKbValid(32));
+	CHECK(!LogConfig_BufferKbValid(32768));
 
 	/* empty: everything; "-x": all but x; "x" / "+x": only those */
 	CHECK(LogConfig_TagAllowed("", "qnet") && LogConfig_TagAllowed(NULL, "qnet"));

@@ -10,6 +10,7 @@ void TestFormat();
 void TestTitleProfile();
 void TestMmProtocol();
 void TestLogConfig();
+void TestLauncherConfig();
 
 int main()
 {
@@ -21,6 +22,7 @@ int main()
 	TestTitleProfile();
 	TestMmProtocol();
 	TestLogConfig();
+	TestLauncherConfig();
 	if (g_Failures)
 		printf("%d check(s) failed\n", g_Failures);
 	else

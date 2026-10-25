@@ -20,10 +20,8 @@
 #include <string.h>
 #include "../sysdll/config/LaunchHandover.h"
 #include "DeviceFile.h"
+#include "LauncherConfig.h"
 #include "LauncherLog.h"
-#include "../sysdll/platform/Ini.h"
-#include "../sysdll/platform/Text.h"
-#include "../sysdll/platform/LogConfig.h"
 
 // The CRT guard covers sysdll title threads; the launcher may use the CRT.
 #pragma warning(disable : 4995)
@@ -43,16 +41,8 @@ typedef DWORD (*dlaunchStartSysModule_t)(char *modPath);
 
 #define REVIVAL_INI_FILE "1vs100Reborn.ini"
 #define PATCH_SWITCH_FILE "1vs100Reborn.disable"
-#define DEFAULT_BACKEND "192.168.42.1"
-#define DEFAULT_BACKEND_IN_ADDR 0xC0A82A01u
-#define DEFAULT_SBG_PORT 1000
-#define DEFAULT_MATCHMAKING_PORT 1001
 #define DNS_TIMEOUT_MS 5000
 #define REVIVAL_INI_BYTES 4096
-
-/* [log] defaults: file under the HDD root, keeping the last ten. */
-#define DEFAULT_LOG_DIR "1vs100Reborn\\logs"
-#define DEFAULT_LOG_KEEP 10
 
 #define AVATAR_METADATA_TIMEOUT_MS 10000
 #define REFUSAL_NOTICE_MS 3000
@@ -277,147 +267,33 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	return resolved;
 }
 
-static VOID SetUint(const IniLine &line, DWORD min, DWORD max, DWORD *out)
-{
-	if (!Text_ParseUint(line.value, line.valueLen, min, max, out))
-		Log("Launcher: config: %.*s is not %u-%u, keeping %u", (int)line.keyLen, line.key, min, max,
-			*out);
-}
-
-/* log_dir/log_keep are the launcher's own. */
-static CHAR g_LogDir[96] = DEFAULT_LOG_DIR;
-static DWORD g_LogKeep = DEFAULT_LOG_KEEP;
-
-/* Below the HDD root: no "..", no leading backslash. */
-static BOOL IsLogDir(const CHAR *v, DWORD n)
-{
-	if (n == 0 || n >= sizeof(g_LogDir) || v[0] == '\\')
-		return FALSE;
-	for (DWORD i = 0; i < n; ++i) {
-		CHAR c = v[i];
-		BOOL ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-			c == '_' || c == '-' || c == '.' || c == ' ' || c == '\\';
-		if (!ok || (c == '.' && i + 1 < n && v[i + 1] == '.'))
-			return FALSE;
-	}
-	return TRUE;
-}
-
-/* One [log] key; FALSE when not one. A bad value keeps the default. */
-static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
-{
-	const CHAR *v = line.value;
-	DWORD n = line.valueLen;
-	if (Text_EqualsNoCase(line.key, line.keyLen, "log_sink")) {
-		if (!LogConfig_ParseSink(v, n, &config->logSink))
-			Log("Launcher: config: log_sink is not debug, file, both or off, keeping the default");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_level")) {
-		if (LogConfig_ParseLevel(v, n, FALSE, &config->logLevel))
-			config->logLevelSet = TRUE;
-		else
-			Log("Launcher: config: log_level is not error, warn, info or debug, keeping the "
-				"build's default");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_debug_also")) {
-		if (!LogConfig_ParseLevel(v, n, TRUE, &config->logDebugAlso))
-			Log("Launcher: config: log_debug_also is not error, warn, info, debug or none, "
-				"keeping warn");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_buffer_kb")) {
-		DWORD value;
-		if (Text_ParseUint(v, n, 0, LOG_BUFFER_MAX_KB, &value) && LogConfig_BufferKbValid(value))
-			config->logBufferKb = value;
-		else
-			Log("Launcher: config: log_buffer_kb is not a power of two in %u-%u, keeping %u",
-				LOG_BUFFER_MIN_KB, LOG_BUFFER_MAX_KB, config->logBufferKb);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_flush_ms")) {
-		SetUint(line, 100, 60000, &config->logFlushMs);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_tags")) {
-		if (n < sizeof(config->logTags))
-			Text_Append(config->logTags, 0, n + 1, v);
-		else
-			Log("Launcher: config: log_tags longer than %u characters, ignored",
-				(DWORD)sizeof(config->logTags) - 1);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_dir")) {
-		while (n > 0 && v[n - 1] == '\\')
-			n--;
-		if (IsLogDir(v, n))
-			Text_Append(g_LogDir, 0, n + 1, v);
-		else
-			Log("Launcher: config: log_dir is not a plain path below the HDD root, keeping %s",
-				g_LogDir);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_keep")) {
-		SetUint(line, 1, 1000, &g_LogKeep);
-	} else {
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/* ini and disable to config. Missing keys keep defaults. Unresolvable host refuses the launch. */
-static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
+/* ini and disable to config. Unresolvable host refuses the launch. */
+static BOOL ReadRevivalConfig(LauncherConfig *config)
 {
 	static CHAR buf[REVIVAL_INI_BYTES];
+	RevivalLaunchConfig *handover = &config->handover;
 	CHAR path[MAX_PATH];
 	NTSTATUS st;
-	IniLine line;
-	DWORD pos = 0;
-	BOOL isHost = FALSE;
-
-	ZeroMemory(config, sizeof(*config));
-	config->size = sizeof(*config);
-	config->backendInAddr = DEFAULT_BACKEND_IN_ADDR;
-	config->sbgPort = DEFAULT_SBG_PORT;
-	config->matchmakingPort = DEFAULT_MATCHMAKING_PORT;
-	Text_Append(config->backendHost, 0, sizeof(config->backendHost), DEFAULT_BACKEND);
-	config->logSink = LOG_SINK_FILE;
-	config->logDebugAlso = LOG_LEVEL_WARN;
-	config->logBufferKb = LOG_DEFAULT_BUFFER_KB;
-	config->logFlushMs = LOG_DEFAULT_FLUSH_MS;
-
-	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
-		LONG got = ReadDeviceFile(path, config->patchSwitches, sizeof(config->patchSwitches), &st);
-		config->patchSwitches[got > 0 ? got : 0] = 0;
-	}
-
 	LONG n = -1;
+
 	if (FindLauncherFile(REVIVAL_INI_FILE, path, sizeof(path)))
 		n = ReadDeviceFile(path, buf, sizeof(buf), &st);
 	if (n < 0) {
 		Log("Launcher: config: no %s read, using defaults", REVIVAL_INI_FILE);
 		n = 0;
 	}
-	buf[n] = 0;
-	while (Ini_Next(buf, (DWORD)n, &pos, &line)) {
-		if (Text_EqualsNoCase(line.key, line.keyLen, "address")) {
-			DWORD addr;
-			if (line.valueLen > REVIVAL_GRID_HOST_MAX) {
-				Log("Launcher: config: address longer than %u characters (Grid URL), keeping %s",
-					(unsigned)REVIVAL_GRID_HOST_MAX, config->backendHost);
-				continue;
-			}
-			if (Ini_ParseIPv4(line.value, line.valueLen, &addr)) {
-				config->backendInAddr = addr;
-				isHost = FALSE;
-			} else if (Ini_IsHostname(line.value, line.valueLen)) {
-				isHost = TRUE;
-			} else {
-				Log("Launcher: config: address is neither an IPv4 address nor a host name, "
-					"keeping %s",
-					config->backendHost);
-				continue;
-			}
-			Text_Append(config->backendHost, 0, line.valueLen + 1, line.value);
-		} else if (Text_EqualsNoCase(line.key, line.keyLen, "sbg_port")) {
-			SetUint(line, 1, 65535, &config->sbgPort);
-		} else if (Text_EqualsNoCase(line.key, line.keyLen, "matchmaking_port")) {
-			SetUint(line, 1, 65535, &config->matchmakingPort);
-		} else if (!ReadLogKey(line, config)) {
-			Log("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
-		}
+	LauncherConfig_Parse(buf, (DWORD)n, config, Log);
+
+	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {
+		LONG got = ReadDeviceFile(
+			path, handover->patchSwitches, sizeof(handover->patchSwitches), &st);
+		handover->patchSwitches[got > 0 ? got : 0] = 0;
 	}
-	if (isHost && !ResolveHost(config->backendHost, &config->backendInAddr))
+
+	if (config->hostIsName && !ResolveHost(handover->backendHost, &handover->backendInAddr))
 		return FALSE;
-	Log("Launcher: config: address=%s (%08X) sbg=%u mm=%u", config->backendHost,
-		config->backendInAddr, config->sbgPort, config->matchmakingPort);
+	Log("Launcher: config: address=%s (%08X) sbg=%u mm=%u", handover->backendHost,
+		handover->backendInAddr, handover->sbgPort, handover->matchmakingPort);
 	return TRUE;
 }
 
@@ -482,9 +358,9 @@ void __cdecl main()
 	Log("Launcher: starting");
 	ResolveGameDir();
 	/* Config first: a refused launch lands in the file too. */
-	RevivalLaunchConfig config;
+	LauncherConfig config;
 	BOOL configRead = ReadRevivalConfig(&config);
-	LauncherLog_Open(&config, g_LogDir, g_LogKeep);
+	LauncherLog_Open(&config.handover, config.logDir, config.logKeep);
 	const WCHAR *refusal = PreflightRefusal();
 	if (refusal) {
 		RefuseLaunch(refusal);
@@ -508,7 +384,7 @@ void __cdecl main()
 		RefuseLaunch(L"1 vs 100: the sysdll could not be loaded (DashLaunch?)");
 		return;
 	}
-	if (!HandOverConfig(hSysdll, &config)) {
+	if (!HandOverConfig(hSysdll, &config.handover)) {
 		RefuseLaunch(L"1 vs 100: the sysdll did not take its configuration");
 		return;
 	}

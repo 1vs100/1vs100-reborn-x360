@@ -125,7 +125,7 @@ VOID LauncherLog_Open(RevivalLaunchConfig *config, const CHAR *logDir, DWORD log
 	text[sizeof(text) - 1] = 0;
 	WriteDeviceFile(path, text, (DWORD)strlen(text), 0, TRUE);
 
-	/* Oldest past log_keep; stops at a gap. */
+	/* Oldest past keep; stops at a gap. */
 	for (DWORD old = runNumber > logKeep ? runNumber - logKeep : 0; old > 0; --old) {
 		_snprintf(path, sizeof(path) - 1, "%s\\run-%06u.log", dir, old);
 		path[sizeof(path) - 1] = 0;

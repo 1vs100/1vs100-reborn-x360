@@ -13,7 +13,7 @@ patches land. See the restructuring plan, chapter "Verification strategy".
 4. `python3 verification/manifest.py capture.log -o manifest-<build>-<launch>.txt`
 
 A log file from the HDD (`Hdd:\1vs100Reborn\logs\run-NNNNNN.log`) has the same line
-shape as a capture and can be passed instead; with `log_level=info` it lacks the debug lines a
+shape as a capture and can be passed instead; with `[log] level=info` it lacks the debug lines a
 diagnostics capture has, so record manifests with the level the baseline was taken at.
 
 Record one per combination: build `1149` / `1317` × launch `dash` / `guide`.

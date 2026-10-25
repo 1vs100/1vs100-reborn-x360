@@ -9,33 +9,33 @@ static BOOL Is(const CHAR *p, DWORD n, const char *expected)
 
 void TestIni()
 {
-	/* the shipped example, with CRLF, a comment, blanks and odd spacing */
-	const char text[] = "; Copy to the HDD root\r\n"
-						"[revival]\r\n"
+	/* CRLF, comments, blanks, odd spacing, sections */
+	const char text[] = "; comment\r\n"
+						"top=1\r\n"
+						"[ backend ]\r\n"
 						"\r\n"
-						"  address = 192.168.1.10 \r\n"
-						"sbg_port=1000\r\n"
+						"  host = 192.168.1.10 \r\n"
 						"# another comment = with equals\n"
 						"no equals here\n"
-						"matchmaking_port=\t1001";
-	DWORD pos = 0;
+						"[log\n"
+						"sink=\tfile";
+	IniReader reader;
 	IniLine line;
 
-	CHECK(Ini_Next(text, sizeof(text) - 1, &pos, &line));
-	CHECK(Is(line.key, line.keyLen, "address") && Is(line.value, line.valueLen, "192.168.1.10"));
-	CHECK(Ini_Next(text, sizeof(text) - 1, &pos, &line));
-	CHECK(Is(line.key, line.keyLen, "sbg_port") && Is(line.value, line.valueLen, "1000"));
-	CHECK(Ini_Next(text, sizeof(text) - 1, &pos, &line));
-	CHECK(Is(line.key, line.keyLen, "matchmaking_port") && Is(line.value, line.valueLen, "1001"));
-	CHECK(!Ini_Next(text, sizeof(text) - 1, &pos, &line));
-	CHECK(!Ini_Next(text, sizeof(text) - 1, &pos, &line));
+	Ini_Open(&reader, text, sizeof(text) - 1);
+	CHECK(Ini_Next(&reader, &line) && line.sectionLen == 0 && Is(line.key, line.keyLen, "top"));
+	CHECK(Ini_Next(&reader, &line) && Is(line.section, line.sectionLen, "backend"));
+	CHECK(Is(line.key, line.keyLen, "host") && Is(line.value, line.valueLen, "192.168.1.10"));
+	CHECK(Ini_Next(&reader, &line) && Is(line.section, line.sectionLen, "log"));
+	CHECK(Is(line.key, line.keyLen, "sink") && Is(line.value, line.valueLen, "file"));
+	CHECK(!Ini_Next(&reader, &line));
+	CHECK(!Ini_Next(&reader, &line));
 
 	/* empty value, empty input */
-	pos = 0;
-	CHECK(Ini_Next("key=\n", 5, &pos, &line) && Is(line.key, line.keyLen, "key") &&
-		line.valueLen == 0);
-	pos = 0;
-	CHECK(!Ini_Next("", 0, &pos, &line));
+	Ini_Open(&reader, "key=\n", 5);
+	CHECK(Ini_Next(&reader, &line) && Is(line.key, line.keyLen, "key") && line.valueLen == 0);
+	Ini_Open(&reader, "", 0);
+	CHECK(!Ini_Next(&reader, &line));
 
 	{
 		DWORD a = 7;

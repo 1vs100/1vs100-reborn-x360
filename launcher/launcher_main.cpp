@@ -291,10 +291,10 @@ static const WCHAR *ReadRevivalConfig(LauncherConfig *config)
 	}
 
 	if (!hostSet)
-		return L"1 vs 100: set the backend address in 1vs100Reborn.ini";
+		return L"1 vs 100: set [backend] host in 1vs100Reborn.ini";
 	if (config->hostIsName && !ResolveHost(handover->backendHost, &handover->backendInAddr))
 		return L"1 vs 100: the backend host in 1vs100Reborn.ini did not resolve";
-	Log("Launcher: config: address=%s (%08X) sbg=%u mm=%u", handover->backendHost,
+	Log("Launcher: config: host=%s (%08X) sbg=%u mm=%u", handover->backendHost,
 		handover->backendInAddr, handover->sbgPort, handover->matchmakingPort);
 	return NULL;
 }

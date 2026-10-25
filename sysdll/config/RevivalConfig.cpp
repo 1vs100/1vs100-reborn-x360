@@ -50,7 +50,7 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 	/* Publish before the flag. */
 	Text_Append(g_RevivalHost, 0, sizeof(g_RevivalHost), config->backendHost);
 	InterlockedExchange(&g_Received, TRUE);
-	LOG_INFO("cfg", "config from the launcher: address=%s (%u.%u.%u.%u) sbg=%u mm=%u",
+	LOG_INFO("cfg", "config from the launcher: host=%s (%u.%u.%u.%u) sbg=%u mm=%u",
 		g_RevivalHost, addr >> 24, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF,
 		g_RevivalSbgPort, g_RevivalMatchmakingPort);
 	return TRUE;

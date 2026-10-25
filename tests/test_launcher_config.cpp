@@ -27,21 +27,25 @@ void TestLauncherConfig()
 	CHECK(c.handover.logDebugAlso == LOG_LEVEL_WARN && c.handover.logBufferKb == 2048);
 	CHECK(strcmp(c.logDir, "1vs100Reborn\\logs") == 0 && c.logKeep == 10);
 
-	CHECK(Parse("address=10.0.0.2\nsbg_port=2000\nmatchmaking_port=2001\n", &c));
+	CHECK(Parse("[backend]\nhost=10.0.0.2\nsbg_port=2000\nmatchmaking_port=2001\n", &c));
 	CHECK(g_Warnings == 0 && !c.hostIsName && c.handover.backendInAddr == 0x0A000002u);
 	CHECK(strcmp(c.handover.backendHost, "10.0.0.2") == 0);
 	CHECK(c.handover.sbgPort == 2000 && c.handover.matchmakingPort == 2001);
 
-	CHECK(Parse("address=backend.lan\n", &c));
+	CHECK(Parse("[Backend]\nHost=backend.lan\n", &c));
 	CHECK(g_Warnings == 0 && c.hostIsName && strcmp(c.handover.backendHost, "backend.lan") == 0);
 
-	/* longer than the Grid URL allows, including a padded IPv4 */
-	CHECK(!Parse("address=a-very-long-host.lan\n", &c) && c.handover.backendHost[0] == 0);
-	CHECK(!Parse("address=00000000000000000001.2.3.4\n", &c) && c.handover.backendHost[0] == 0);
-	CHECK(!Parse("address=bad_name\n", &c) && g_Warnings == 2);
+	/* keys belong to their section */
+	CHECK(!Parse("host=10.0.0.2\n[log]\nhost=10.0.0.2\n", &c) && g_Warnings == 3);
 
-	Parse("address=h\nlog_sink=both\nlog_level=debug\nlog_debug_also=none\nlog_buffer_kb=4096\n"
-		  "log_flush_ms=250\nlog_tags=-netlog\nlog_dir=logs\\run\\\nlog_keep=3\n",
+	/* longer than the Grid URL allows, including a padded IPv4 */
+	CHECK(!Parse("[backend]\nhost=a-very-long-host.lan\n", &c) && c.handover.backendHost[0] == 0);
+	CHECK(!Parse("[backend]\nhost=00000000000000000001.2.3.4\n", &c));
+	CHECK(c.handover.backendHost[0] == 0);
+	CHECK(!Parse("[backend]\nhost=bad_name\n", &c) && g_Warnings == 2);
+
+	Parse("[backend]\nhost=h\n[log]\nsink=both\nlevel=debug\ndebug_also=none\nbuffer_kb=4096\n"
+		  "flush_ms=250\ntags=-netlog\ndir=logs\\run\\\nkeep=3\n",
 		&c);
 	CHECK(g_Warnings == 0 && c.handover.logSink == (LOG_SINK_DEBUG | LOG_SINK_FILE));
 	CHECK(c.handover.logLevelSet && c.handover.logLevel == LOG_LEVEL_DEBUG);
@@ -49,7 +53,7 @@ void TestLauncherConfig()
 	CHECK(c.handover.logFlushMs == 250 && strcmp(c.handover.logTags, "-netlog") == 0);
 	CHECK(strcmp(c.logDir, "logs\\run") == 0 && c.logKeep == 3);
 
-	Parse("address=h\nlog_buffer_kb=3000\nlog_dir=..\\x\nlog_keep=0\nsbg_port=0\nbogus=1\n", &c);
+	Parse("[backend]\nhost=h\nsbg_port=0\n[log]\nbuffer_kb=3000\ndir=..\\x\nkeep=0\nbogus=1\n", &c);
 	CHECK(g_Warnings == 5 && c.handover.logBufferKb == 2048 && c.logKeep == 10);
 	CHECK(strcmp(c.logDir, "1vs100Reborn\\logs") == 0 && c.handover.sbgPort == 1000);
 }

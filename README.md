@@ -45,7 +45,7 @@ cmake -S tests -B build-tests && cmake --build build-tests && ctest --test-dir b
 The launcher looks up each of these files, and `1vs100Reborn.xex` itself, **next to the launcher
 first** (its `game:\` directory), then on the HDD root:
 
-* `1vs100Reborn.ini`: the backend address and ports. Start from `1vs100Reborn.ini.example`.
+* `1vs100Reborn.ini`: the backend host and ports. Start from `1vs100Reborn.ini.example`.
 * `1vs100Reborn.disable`: patches to switch off, by name. See `PATCHES.md`.
 
 ## Documentation

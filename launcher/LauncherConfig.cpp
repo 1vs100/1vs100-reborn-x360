@@ -7,11 +7,49 @@
 #define DEFAULT_LOG_DIR "1vs100Reborn\\logs"
 #define DEFAULT_LOG_KEEP 10
 
+static BOOL IsKey(const IniLine &line, const CHAR *key)
+{
+	return Text_EqualsNoCase(line.key, line.keyLen, key);
+}
+
+static VOID Invalid(const IniLine &line, const CHAR *expected, ConfigWarn_t warn)
+{
+	warn("Launcher: config: [%.*s] %.*s=%.*s is not %s, ignored", (int)line.sectionLen,
+		line.section, (int)line.keyLen, line.key, (int)line.valueLen, line.value, expected);
+}
+
+static VOID TooLong(const IniLine &line, DWORD max, ConfigWarn_t warn)
+{
+	warn("Launcher: config: [%.*s] %.*s is longer than %u characters, ignored",
+		(int)line.sectionLen, line.section, (int)line.keyLen, line.key, max);
+}
+
 static VOID SetUint(const IniLine &line, DWORD min, DWORD max, DWORD *out, ConfigWarn_t warn)
 {
 	if (!Text_ParseUint(line.value, line.valueLen, min, max, out))
-		warn("Launcher: config: %.*s is not %u-%u, keeping %u", (int)line.keyLen, line.key, min, max,
-			*out);
+		warn("Launcher: config: [%.*s] %.*s=%.*s is not %u-%u, ignored", (int)line.sectionLen,
+			line.section, (int)line.keyLen, line.key, (int)line.valueLen, line.value, min, max);
+}
+
+/* IPv4 or a host name; the Grid URL bounds the length. */
+static BOOL SetHost(const IniLine &line, LauncherConfig *launcher, ConfigWarn_t warn)
+{
+	RevivalLaunchConfig *config = &launcher->handover;
+	DWORD addr = 0;
+	BOOL isName;
+	if (line.valueLen > REVIVAL_GRID_HOST_MAX) {
+		TooLong(line, REVIVAL_GRID_HOST_MAX, warn);
+		return FALSE;
+	}
+	isName = !Ini_ParseIPv4(line.value, line.valueLen, &addr);
+	if (isName && !Ini_IsHostname(line.value, line.valueLen)) {
+		Invalid(line, "an IPv4 address or a host name", warn);
+		return FALSE;
+	}
+	config->backendInAddr = addr;
+	launcher->hostIsName = isName;
+	Text_Append(config->backendHost, 0, line.valueLen + 1, line.value);
+	return TRUE;
 }
 
 /* Below the HDD root: no "..", no leading backslash. */
@@ -29,49 +67,63 @@ static BOOL IsLogDir(const CHAR *v, DWORD n)
 	return TRUE;
 }
 
-/* One [log] key; FALSE when not one. A bad value keeps the default. */
-static BOOL ReadLogKey(const IniLine &line, LauncherConfig *launcher, ConfigWarn_t warn)
+/* FALSE for an unknown key. */
+static BOOL SetBackendKey(const IniLine &line, LauncherConfig *launcher, BOOL *hostSet,
+	ConfigWarn_t warn)
+{
+	RevivalLaunchConfig *config = &launcher->handover;
+	if (IsKey(line, "host")) {
+		if (SetHost(line, launcher, warn))
+			*hostSet = TRUE;
+	} else if (IsKey(line, "sbg_port")) {
+		SetUint(line, 1, 65535, &config->sbgPort, warn);
+	} else if (IsKey(line, "matchmaking_port")) {
+		SetUint(line, 1, 65535, &config->matchmakingPort, warn);
+	} else {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/* FALSE for an unknown key. */
+static BOOL SetLogKey(const IniLine &line, LauncherConfig *launcher, ConfigWarn_t warn)
 {
 	RevivalLaunchConfig *config = &launcher->handover;
 	const CHAR *v = line.value;
 	DWORD n = line.valueLen;
-	if (Text_EqualsNoCase(line.key, line.keyLen, "log_sink")) {
+	if (IsKey(line, "sink")) {
 		if (!LogConfig_ParseSink(v, n, &config->logSink))
-			warn("Launcher: config: log_sink is not debug, file, both or off, keeping the default");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_level")) {
+			Invalid(line, "off, debug, file or both", warn);
+	} else if (IsKey(line, "level")) {
 		if (LogConfig_ParseLevel(v, n, FALSE, &config->logLevel))
 			config->logLevelSet = TRUE;
 		else
-			warn("Launcher: config: log_level is not error, warn, info or debug, keeping the "
-				"build's default");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_debug_also")) {
+			Invalid(line, "error, warn, info or debug", warn);
+	} else if (IsKey(line, "debug_also")) {
 		if (!LogConfig_ParseLevel(v, n, TRUE, &config->logDebugAlso))
-			warn("Launcher: config: log_debug_also is not error, warn, info, debug or none, "
-				"keeping warn");
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_buffer_kb")) {
+			Invalid(line, "error, warn, info, debug or none", warn);
+	} else if (IsKey(line, "buffer_kb")) {
 		DWORD value;
 		if (Text_ParseUint(v, n, 0, LOG_BUFFER_MAX_KB, &value) && LogConfig_BufferKbValid(value))
 			config->logBufferKb = value;
 		else
-			warn("Launcher: config: log_buffer_kb is not a power of two in %u-%u, keeping %u",
-				LOG_BUFFER_MIN_KB, LOG_BUFFER_MAX_KB, config->logBufferKb);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_flush_ms")) {
+			warn("Launcher: config: [log] buffer_kb=%.*s is not a power of two in %u-%u, ignored",
+				(int)n, v, LOG_BUFFER_MIN_KB, LOG_BUFFER_MAX_KB);
+	} else if (IsKey(line, "flush_ms")) {
 		SetUint(line, 100, 60000, &config->logFlushMs, warn);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_tags")) {
+	} else if (IsKey(line, "tags")) {
 		if (n < sizeof(config->logTags))
 			Text_Append(config->logTags, 0, n + 1, v);
 		else
-			warn("Launcher: config: log_tags longer than %u characters, ignored",
-				(DWORD)sizeof(config->logTags) - 1);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_dir")) {
+			TooLong(line, sizeof(config->logTags) - 1, warn);
+	} else if (IsKey(line, "dir")) {
 		while (n > 0 && v[n - 1] == '\\')
 			n--;
 		if (IsLogDir(v, n))
 			Text_Append(launcher->logDir, 0, n + 1, v);
 		else
-			warn("Launcher: config: log_dir is not a plain path below the HDD root, keeping %s",
-				launcher->logDir);
-	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_keep")) {
+			Invalid(line, "a plain path below the HDD root", warn);
+	} else if (IsKey(line, "keep")) {
 		SetUint(line, 1, 1000, &launcher->logKeep, warn);
 	} else {
 		return FALSE;
@@ -82,8 +134,8 @@ static BOOL ReadLogKey(const IniLine &line, LauncherConfig *launcher, ConfigWarn
 BOOL LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher, ConfigWarn_t warn)
 {
 	RevivalLaunchConfig *config = &launcher->handover;
+	IniReader reader;
 	IniLine line;
-	DWORD pos = 0;
 	BOOL hostSet = FALSE;
 
 	*launcher = LauncherConfig();
@@ -97,34 +149,18 @@ BOOL LauncherConfig_Parse(const CHAR *text, DWORD len, LauncherConfig *launcher,
 	Text_Append(launcher->logDir, 0, sizeof(launcher->logDir), DEFAULT_LOG_DIR);
 	launcher->logKeep = DEFAULT_LOG_KEEP;
 
-	while (Ini_Next(text, len, &pos, &line)) {
-		if (Text_EqualsNoCase(line.key, line.keyLen, "address")) {
-			DWORD addr;
-			if (line.valueLen > REVIVAL_GRID_HOST_MAX) {
-				warn("Launcher: config: address longer than %u characters (Grid URL)",
-					(unsigned)REVIVAL_GRID_HOST_MAX);
-				continue;
-			}
-			if (Ini_ParseIPv4(line.value, line.valueLen, &addr)) {
-				config->backendInAddr = addr;
-				launcher->hostIsName = FALSE;
-			} else if (Ini_IsHostname(line.value, line.valueLen)) {
-				launcher->hostIsName = TRUE;
-			} else {
-				warn("Launcher: config: address is neither an IPv4 address nor a host name");
-				continue;
-			}
-			Text_Append(config->backendHost, 0, line.valueLen + 1, line.value);
-			hostSet = TRUE;
-		} else if (Text_EqualsNoCase(line.key, line.keyLen, "sbg_port")) {
-			SetUint(line, 1, 65535, &config->sbgPort, warn);
-		} else if (Text_EqualsNoCase(line.key, line.keyLen, "matchmaking_port")) {
-			SetUint(line, 1, 65535, &config->matchmakingPort, warn);
-		} else if (!ReadLogKey(line, launcher, warn)) {
-			warn("Launcher: config: unknown key '%.*s' ignored", (int)line.keyLen, line.key);
-		}
+	Ini_Open(&reader, text, len);
+	while (Ini_Next(&reader, &line)) {
+		BOOL known = FALSE;
+		if (Text_EqualsNoCase(line.section, line.sectionLen, "backend"))
+			known = SetBackendKey(line, launcher, &hostSet, warn);
+		else if (Text_EqualsNoCase(line.section, line.sectionLen, "log"))
+			known = SetLogKey(line, launcher, warn);
+		if (!known)
+			warn("Launcher: config: unknown key [%.*s] %.*s, ignored", (int)line.sectionLen,
+				line.section, (int)line.keyLen, line.key);
 	}
 	if (!hostSet)
-		warn("Launcher: config: no valid address");
+		warn("Launcher: config: no valid [backend] host");
 	return hostSet;
 }

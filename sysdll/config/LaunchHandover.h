@@ -15,7 +15,7 @@ struct RevivalLaunchConfig {
 	DWORD backendInAddr; /* a.b.c.d as 0xAABBCCDD, already resolved */
 	DWORD sbgPort;
 	DWORD matchmakingPort;
-	CHAR backendHost[REVIVAL_HOST_BYTES]; /* address= as written */
+	CHAR backendHost[REVIVAL_HOST_BYTES]; /* host= as written */
 	/* 1vs100Reborn.disable as read; empty when there is none. Read by the launcher: the file may unmount with the game. */
 	CHAR patchSwitches[REVIVAL_PATCH_SWITCHES_BYTES];
 	/* [log] keys */

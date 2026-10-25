@@ -5,9 +5,32 @@ static BOOL IsBlank(CHAR c)
 	return c == ' ' || c == '\t' || c == '\r';
 }
 
-BOOL Ini_Next(const CHAR *text, DWORD len, DWORD *pos, IniLine *line)
+VOID Ini_Open(IniReader *reader, const CHAR *text, DWORD len)
 {
-	DWORD i = *pos;
+	reader->text = text;
+	reader->len = len;
+	reader->pos = 0;
+	reader->section = text;
+	reader->sectionLen = 0;
+}
+
+static VOID SetSection(IniReader *reader, DWORD start, DWORD end)
+{
+	const CHAR *text = reader->text;
+	if (end > start && text[end - 1] == ']')
+		end--;
+	while (start < end && IsBlank(text[start]))
+		start++;
+	while (end > start && IsBlank(text[end - 1]))
+		end--;
+	reader->section = text + start;
+	reader->sectionLen = end - start;
+}
+
+BOOL Ini_Next(IniReader *reader, IniLine *line)
+{
+	const CHAR *text = reader->text;
+	DWORD len = reader->len, i = reader->pos;
 	while (i < len) {
 		DWORD ls = i, le, eq, ke, vs;
 		while (i < len) {
@@ -22,8 +45,12 @@ BOOL Ini_Next(const CHAR *text, DWORD len, DWORD *pos, IniLine *line)
 			ls++;
 		while (le > ls && IsBlank(text[le - 1]))
 			le--;
-		if (ls == le || text[ls] == ';' || text[ls] == '#' || text[ls] == '[')
+		if (ls == le || text[ls] == ';' || text[ls] == '#')
 			continue;
+		if (text[ls] == '[') {
+			SetSection(reader, ls + 1, le);
+			continue;
+		}
 		eq = ls;
 		while (eq < le) {
 			if (text[eq] == '=')
@@ -38,14 +65,16 @@ BOOL Ini_Next(const CHAR *text, DWORD len, DWORD *pos, IniLine *line)
 		vs = eq + 1;
 		while (vs < le && IsBlank(text[vs]))
 			vs++;
+		line->section = reader->section;
+		line->sectionLen = reader->sectionLen;
 		line->key = text + ls;
 		line->keyLen = ke - ls;
 		line->value = text + vs;
 		line->valueLen = le - vs;
-		*pos = i;
+		reader->pos = i;
 		return TRUE;
 	}
-	*pos = i;
+	reader->pos = i;
 	return FALSE;
 }
 

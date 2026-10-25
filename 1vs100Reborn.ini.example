@@ -1,32 +1,30 @@
-; Copy as 1vs100Reborn.ini next to the launcher (looked up first) or to the HDD root, and set the
-; backend's LAN address.
+; Copy as 1vs100Reborn.ini next to the launcher (looked up first) or to the HDD root.
 ; The launcher reads this file and hands the values to the sysdll.
-; Lines without an equals sign are ignored. A missing key keeps the built-in default.
-; address is required: an IPv4 address or a host name (at most 16 characters). The launcher resolves a name
-; through the console's DNS server and refuses the launch when it does not resolve.
-[revival]
-address=192.168.1.10
+; A missing key keeps the value shown here.
+
+[backend]
+; Required. IPv4 address or host name, at most 16 characters. A name is resolved through the
+; console's DNS server; the launch is refused when it does not resolve.
+host=192.168.1.10
 sbg_port=1000
 matchmaking_port=1001
 
-; Logging. Every key is optional; the values below are the defaults.
 [log]
-; debug | file | both | off. file: the log goes to the HDD (the game is not slowed down);
-; debug: the debug channel as before (XBDM capture); both: both.
-log_sink=file
-; error | warn | info | debug. Without the key: info in the production build, debug in the
-; diagnostics build.
-;log_level=info
-; With log_sink=file, lines this severe or worse also go to the debug channel (none: no line).
-log_debug_also=warn
+; off | debug | file | both. file: HDD, does not slow the game; debug: debug channel (XBDM).
+sink=file
+; error | warn | info | debug. Default: info in the production build, debug in the diagnostics
+; build.
+;level=info
+; With sink=file, lines this severe or worse also go to the debug channel; none: no line.
+debug_also=warn
 ; Below the HDD root. Files are run-000001.log, run-000002.log, ...; latest.txt names the newest.
-log_dir=1vs100Reborn\logs
-; How many log files to keep (1-1000).
-log_keep=10
-; RAM buffer for the file in KB, a power of two (64-16384); a full buffer drops lines and says so in the file.
-log_buffer_kb=2048
-; How often the buffer is written to the file (100-60000 ms).
-log_flush_ms=100
+dir=1vs100Reborn\logs
+; Log files kept (1-1000).
+keep=10
+; RAM buffer in KB, a power of two (64-16384). A full buffer drops lines and says so in the file.
+buffer_kb=2048
+; Buffer to file interval (100-60000 ms).
+flush_ms=100
 ; Tags to leave out (-tag) or to keep only (tag): e.g. -netlog,-tlog or qnet,mm,launcher.
 ; Tags: core title patch cave cfg mm qnet net content xam lua netlog launcher xulu tlog
-;log_tags=
+;tags=

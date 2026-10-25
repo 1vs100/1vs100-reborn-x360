@@ -2,6 +2,7 @@ build/
 build-tests/
 build-diagnostics/
 evidence/
+docs/patches.md
 *.exe
 *.xex
 *.dll

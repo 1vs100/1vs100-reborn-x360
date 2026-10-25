@@ -36,6 +36,10 @@ void TestLogConfig()
 	CHECK(Level("none", FALSE) == 0xAA && Level("none", TRUE) == LOG_LEVEL_NONE);
 	CHECK(Level("verbose", TRUE) == 0xAA);
 
+	CHECK(LogConfig_BufferKbValid(64) && LogConfig_BufferKbValid(2048) && LogConfig_BufferKbValid(16384));
+	CHECK(!LogConfig_BufferKbValid(32) && !LogConfig_BufferKbValid(3000) && !LogConfig_BufferKbValid(32768));
+	CHECK(!LogConfig_BufferKbValid(0));
+
 	/* empty: everything; "-x": all but x; "x" / "+x": only those */
 	CHECK(LogConfig_TagAllowed("", "qnet") && LogConfig_TagAllowed(NULL, "qnet"));
 	CHECK(!LogConfig_TagAllowed("-netlog", "netlog") && LogConfig_TagAllowed("-netlog", "qnet"));

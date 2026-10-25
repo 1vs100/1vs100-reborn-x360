@@ -35,6 +35,11 @@ BOOL LogConfig_ParseLevel(const CHAR *v, DWORD n, BOOL allowNone, DWORD *out)
 	return FALSE;
 }
 
+BOOL LogConfig_BufferKbValid(DWORD kb)
+{
+	return kb >= LOG_BUFFER_MIN_KB && kb <= LOG_BUFFER_MAX_KB && (kb & (kb - 1)) == 0;
+}
+
 static BOOL IsTagSeparator(CHAR c)
 {
 	return c == ',' || c == ' ' || c == '\t';

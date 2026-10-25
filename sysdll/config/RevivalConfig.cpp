@@ -25,6 +25,10 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 			config ? config->size : 0, (DWORD)sizeof(RevivalLaunchConfig));
 		return FALSE;
 	}
+	if (!LogConfig_BufferKbValid(config->logBufferKb)) {
+		LOG_ERROR("cfg", "config from the launcher refused: log buffer %u KB", config->logBufferKb);
+		return FALSE;
+	}
 	addr = config->backendInAddr;
 	g_RevivalInAddr = addr;
 	g_RevivalSbgPort = config->sbgPort;
@@ -33,10 +37,10 @@ extern "C" BOOL SetRevivalConfig(const RevivalLaunchConfig *config)
 	{
 		LogSettings log;
 		log.sink = config->logSink;
-		/* 0 is the build default. */
-		log.level = config->logLevel ? config->logLevel - 1 : LOG_LEVEL_NONE;
+		log.levelSet = config->logLevelSet;
+		log.level = config->logLevel;
 		log.debugAlso = config->logDebugAlso;
-		log.bufferBytes = config->logBufferBytes;
+		log.bufferKb = config->logBufferKb;
 		log.flushMs = config->logFlushMs;
 		log.file = config->logFile;
 		log.fileBytes = config->logFileBytes;

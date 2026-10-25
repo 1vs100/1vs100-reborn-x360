@@ -12,9 +12,10 @@ VOID Log_EmitText(LogLevel level, const CHAR *tag, const CHAR *text);
 /* Until settings arrive, lines go to the debug channel and are kept for the file. */
 struct LogSettings {
 	DWORD sink;        /* LOG_SINK_* bits */
+	BOOL levelSet;     /* FALSE: the build's default */
 	DWORD level;       /* most verbose level kept */
 	DWORD debugAlso;   /* file-only sink: this level and above also to the debug channel */
-	DWORD bufferBytes;
+	DWORD bufferKb;    /* LogConfig_BufferKbValid */
 	DWORD flushMs;
 	const CHAR *file; /* NULL or empty: no file */
 	DWORD fileBytes;  /* already written by the launcher */

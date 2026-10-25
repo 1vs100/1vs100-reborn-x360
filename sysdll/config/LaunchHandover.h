@@ -18,11 +18,12 @@ struct RevivalLaunchConfig {
 	CHAR backendHost[REVIVAL_HOST_BYTES]; /* address= as written */
 	/* 1vs100Reborn.disable as read; empty when there is none. Read by the launcher: the file may unmount with the game. */
 	CHAR patchSwitches[REVIVAL_PATCH_SWITCHES_BYTES];
-	/* [log] keys; 0 in logLevel or logBufferBytes means the sysdll default. */
+	/* [log] keys */
 	DWORD logSink;      /* LOG_SINK_* bits */
-	DWORD logLevel;     /* most verbose level kept, + 1 */
+	BOOL logLevelSet;   /* FALSE: the sysdll build's default */
+	DWORD logLevel;     /* most verbose level kept */
 	DWORD logDebugAlso; /* file-only sink: this level and above also to the debug channel */
-	DWORD logBufferBytes;
+	DWORD logBufferKb;  /* LogConfig_BufferKbValid */
 	DWORD logFlushMs;
 	/* This launch log file as a device path; empty when there is no file. Launcher wrote logFileBytes already. */
 	DWORD logFileBytes;

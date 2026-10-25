@@ -82,7 +82,7 @@ VOID LauncherLog_Open(RevivalLaunchConfig *config, const CHAR *logDir, DWORD log
 	DWORD runNumber = 1; /* next.txt missing or invalid */
 	g_LogSink = config->logSink;
 	g_LogWanted = config->logSink != 0 &&
-		(config->logLevel == 0 || config->logLevel - 1 >= LOG_LEVEL_INFO) &&
+		(!config->logLevelSet || config->logLevel >= LOG_LEVEL_INFO) &&
 		LogConfig_TagAllowed(config->logTags, "launcher");
 	g_LogDebugAlso = !(config->logSink & LOG_SINK_DEBUG) &&
 		config->logDebugAlso != LOG_LEVEL_NONE && config->logDebugAlso >= LOG_LEVEL_INFO;

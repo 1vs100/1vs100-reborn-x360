@@ -312,9 +312,8 @@ static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 		if (!LogConfig_ParseSink(v, n, &config->logSink))
 			Log("Launcher: config: log_sink is not debug, file, both or off, keeping the default");
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_level")) {
-		DWORD value;
-		if (LogConfig_ParseLevel(v, n, FALSE, &value))
-			config->logLevel = value + 1;
+		if (LogConfig_ParseLevel(v, n, FALSE, &config->logLevel))
+			config->logLevelSet = TRUE;
 		else
 			Log("Launcher: config: log_level is not error, warn, info or debug, keeping the "
 				"build's default");
@@ -324,10 +323,11 @@ static BOOL ReadLogKey(const IniLine &line, RevivalLaunchConfig *config)
 				"keeping warn");
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_buffer_kb")) {
 		DWORD value;
-		if (Text_ParseUint(v, n, 64, 16384, &value))
-			config->logBufferBytes = value * 1024;
+		if (Text_ParseUint(v, n, 0, LOG_BUFFER_MAX_KB, &value) && LogConfig_BufferKbValid(value))
+			config->logBufferKb = value;
 		else
-			Log("Launcher: config: log_buffer_kb is not 64-16384, keeping the default");
+			Log("Launcher: config: log_buffer_kb is not a power of two in %u-%u, keeping %u",
+				LOG_BUFFER_MIN_KB, LOG_BUFFER_MAX_KB, config->logBufferKb);
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_flush_ms")) {
 		SetUint(line, 100, 60000, &config->logFlushMs);
 	} else if (Text_EqualsNoCase(line.key, line.keyLen, "log_tags")) {
@@ -370,6 +370,7 @@ static BOOL ReadRevivalConfig(RevivalLaunchConfig *config)
 	Text_Append(config->backendHost, 0, sizeof(config->backendHost), DEFAULT_BACKEND);
 	config->logSink = LOG_SINK_FILE;
 	config->logDebugAlso = LOG_LEVEL_WARN;
+	config->logBufferKb = LOG_DEFAULT_BUFFER_KB;
 	config->logFlushMs = LOG_DEFAULT_FLUSH_MS;
 
 	if (FindLauncherFile(PATCH_SWITCH_FILE, path, sizeof(path))) {

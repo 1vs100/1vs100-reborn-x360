@@ -15,9 +15,7 @@ static const DWORD kDefaultLevel = LOG_LEVEL_DEBUG;
 #else
 static const DWORD kDefaultLevel = LOG_LEVEL_INFO;
 #endif
-static const DWORD kDefaultBufferBytes = 2u * 1024 * 1024;
-static const DWORD kMinBufferBytes = 64u * 1024;
-static const DWORD kMaxBufferBytes = 16u * 1024 * 1024;
+static const DWORD kMinBufferBytes = LOG_BUFFER_MIN_KB * 1024;
 static const DWORD kWriterPollMs = 50;
 static const DWORD kRecordHeader = 12; /* tick, thread id, length */
 static const DWORD kPoolTag = 0x51534C47;
@@ -128,18 +126,10 @@ VOID Log_RouteBuilt(LogLevel level, const CHAR *text)
 	Log_Route(level, text);
 }
 
-static DWORD PowerOfTwoAtMost(DWORD n)
+/* System pool: the default pool belongs to the configuring thread's process. Halves on failure. */
+static BYTE *AllocateRing(DWORD bytes, DWORD *size)
 {
-	DWORD p = kMinBufferBytes;
-	while (p * 2 <= n && p * 2 <= kMaxBufferBytes)
-		p *= 2;
-	return p;
-}
-
-/* System pool: the default pool belongs to the configuring thread's process. */
-static BYTE *AllocateRing(DWORD wanted, DWORD *size)
-{
-	DWORD n = PowerOfTwoAtMost(wanted);
+	DWORD n = bytes;
 	while (n >= kMinBufferBytes) {
 		BYTE *p = (BYTE *)ExAllocatePoolTypeWithTag(n, kPoolTag, PoolTypeSystem);
 		if (p != NULL) {
@@ -161,10 +151,9 @@ VOID Log_Configure(const LogSettings *settings)
 	wantFile = (settings->sink & LOG_SINK_FILE) != 0 && settings->file != NULL &&
 		settings->file[0] != 0;
 	if (wantFile)
-		ring = AllocateRing(
-			settings->bufferBytes ? settings->bufferBytes : kDefaultBufferBytes, &size);
+		ring = AllocateRing(settings->bufferKb * 1024, &size);
 
-	g_Level = settings->level <= LOG_LEVEL_DEBUG ? settings->level : kDefaultLevel;
+	g_Level = settings->levelSet ? settings->level : kDefaultLevel;
 	g_DebugAlso = settings->debugAlso;
 	g_FlushMs = settings->flushMs;
 	g_Tags[0] = 0;

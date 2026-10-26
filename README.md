@@ -17,7 +17,7 @@ the backend's matchmaking service, and Marketplace content is found on loose ins
 
 ## Quick start
 
-Check the [Releases](https://github.com/1vs100/1vs100-reborn-x360) page and download the latest archive.
+Check the [Releases](https://github.com/1vs100/1vs100-reborn-x360/releases) page and download the latest archive.
 
 ## How to compile?
 

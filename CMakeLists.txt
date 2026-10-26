@@ -38,7 +38,7 @@ set(LOADER_SOURCES
     sysdll/matchmaking/AvatarCache.cpp
     sysdll/matchmaking/Connection.cpp
     sysdll/matchmaking/MatchmakingClient.cpp
-    sysdll/matchmaking/Protocol.cpp
+    sysdll/matchmaking/protocol/Protocol.cpp
     sysdll/matchmaking/RelayQueues.cpp
     sysdll/matchmaking/Roster.cpp
     # title: per-build data and detection

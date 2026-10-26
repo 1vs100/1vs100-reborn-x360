@@ -2,7 +2,7 @@
 #include "MatchmakingClient.h"
 #include "AvatarCache.h"
 #include "Connection.h"
-#include "Protocol.h"
+#include "protocol/Protocol.h"
 #include "RelayQueues.h"
 #include "Roster.h"
 #include "../platform/Log.h"
@@ -41,7 +41,7 @@ static DWORD g_MmNextPlayersCheckTick = 0;
 static VOID ApplyRoster(const BYTE *payload, DWORD payloadLen)
 {
 	MatchmakingPeer next[MATCHMAKING_MAX_REMOTE_PEERS];
-	DWORD count = 0, groupId = 0;
+	uint32_t count = 0, groupId = 0;
 	ZeroMemory(next, sizeof(next));
 	if (!MmDecodeRoster(
 			payload, payloadLen, g_MmXuid, next, MATCHMAKING_MAX_REMOTE_PEERS, &count, &groupId)) {
@@ -171,7 +171,7 @@ static VOID AttemptJoin()
 {
 	BYTE payload[MM_MAX_FRAME];
 	DWORD payloadLen;
-	DWORD population = 0, groupId = 0;
+	uint32_t population = 0, groupId = 0;
 	MmWriter w;
 
 	LOG_INFO("mm", "Matchmaking: AttemptJoin starting");
@@ -287,7 +287,7 @@ static VOID FetchPeerAvatars()
 	}
 }
 
-static VOID QueueIncoming(VOID *ctx, ULONGLONG from, const BYTE *data, DWORD len)
+static void QueueIncoming(void *ctx, uint64_t from, const uint8_t *data, uint32_t len)
 {
 	(void)ctx;
 	RelayQueues_PushIn(from, data, len);

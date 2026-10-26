@@ -1,6 +1,6 @@
 #pragma once
 #include "../stdafx.h"
-#include "MatchmakingTypes.h"
+#include "protocol/MatchmakingTypes.h"
 
 /* TCP client for the gameserver matchmaking protocol. Separate from SBG, which reimplements the title wire protocol. */
 VOID SetupMatchmakingClient();

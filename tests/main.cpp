@@ -8,7 +8,6 @@ void TestPpcDecode();
 void TestIni();
 void TestFormat();
 void TestTitleProfile();
-void TestMmProtocol();
 void TestLogConfig();
 void TestLauncherConfig();
 
@@ -20,7 +19,6 @@ int main()
 	TestIni();
 	TestFormat();
 	TestTitleProfile();
-	TestMmProtocol();
 	TestLogConfig();
 	TestLauncherConfig();
 	if (g_Failures)

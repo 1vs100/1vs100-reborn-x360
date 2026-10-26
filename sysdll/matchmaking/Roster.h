@@ -1,5 +1,6 @@
 #pragma once
-#include "MatchmakingTypes.h"
+#include "../platform/Types.h"
+#include "protocol/MatchmakingTypes.h"
 
 /* Remote peers of this session; guarded by one SpinLock. */
 

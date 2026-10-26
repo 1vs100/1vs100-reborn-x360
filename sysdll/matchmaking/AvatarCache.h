@@ -1,6 +1,6 @@
 #pragma once
 #include "../stdafx.h"
-#include "MatchmakingTypes.h"
+#include "protocol/MatchmakingTypes.h"
 
 /* Avatar metadata for the relay: own (XAM warm-up) and roster peers. XAvatarInitialize can lag detection, so reads retry without waiting; loader thread only. */
 

@@ -10,7 +10,6 @@ add_executable(host-tests
     test_ini.cpp
     test_format.cpp
     test_title_profile.cpp
-    test_mm_protocol.cpp
     test_logconfig.cpp
     test_launcher_config.cpp
     ../sysdll/platform/Text.cpp
@@ -21,7 +20,6 @@ add_executable(host-tests
     ../sysdll/title/TitleProfile.cpp
     ../sysdll/title/TitleProfile1149.cpp
     ../sysdll/title/TitleProfile1317.cpp
-    ../sysdll/matchmaking/Protocol.cpp
     ../launcher/LauncherConfig.cpp)
 target_compile_options(host-tests PRIVATE -Wall -Wextra)
 

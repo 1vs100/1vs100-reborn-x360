@@ -56,6 +56,7 @@ Check a file before you copy it. Its SHA-256 checksum must match the table. On a
 
 If you are running into issues
 
+- Check for an updated build on https://github.com/1vs100/1vs100-reborn-x360
 - Check the issues / discussions sections of the Github repositories
 - Visit our Discord: https://discord.gg/tV3ajhwFTf
 

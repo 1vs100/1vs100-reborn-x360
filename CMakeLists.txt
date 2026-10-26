@@ -142,13 +142,7 @@ add_custom_command(TARGET 1vs100Reborn PRE_LINK
     COMMENT "gen-patch-docs: docs/patches.md matches the registry"
     VERBATIM)
 
-# Real-devkit flavor: a normal title EXE (not a debugger-extension DLL) that
-# chainloads the game itself, so our hooks live in a process nothing tears
-# down out from under us. Also asks the console's already-resident DashLaunch
-# (launch.xex, export ordinal 2 = dlaunchStartSysModule) to load the unmodified
-# 1vs100Reborn.xex sysdll system-wide first, instead of requiring a manual
-# launch.ini plugin definition.
-add_xex(1vs100XdkLauncher
+add_xex(launcher
     TYPE       EXE
     SOURCES    launcher/launcher_main.cpp
                launcher/DeviceFile.cpp

@@ -1,9 +1,8 @@
 # Installing 1 vs 100 Reborn
 
-tl;dr
+Here's how you can play the game >1 vs 100< again!
 
-- You play 1 vs 100 on your modded Xbox 360 against a community server.
-- You copy the files from this archive and the game packages to your console, then start the game.
+- brought to you by Avcracy and tuxuser
 
 ## What you need
 
@@ -20,7 +19,7 @@ Tested with:
 ## Steps
 
 1. Create a folder on the console, for example `Hdd:\Games\1vs100Reborn`.
-2. Copy `1vs100Launcher.xex` into that folder and rename it to `default.xex`.
+2. Copy `launcher.xex` into that folder and rename it to `default.xex`.
 3. Copy `1vs100Reborn.xex` and `1vs100Reborn.ini` into the same folder.
 4. Copy the game package and all show and episode packages to the console (see the next section).
 5. Sign in with your profile on the first controller.
@@ -34,10 +33,7 @@ All of these go on the console hard drive.
 
 | What | Folder on the console |
 |------|------------------------|
-| 1 vs 100 game | `Hdd:\Content\0000000000000000\584A07D1\00000002\` |
-| Show and episode packages | `Hdd:\Content\0000000000000000\584A07D1\00000002\` |
-
-Each package file must be named with its content id only, with no file extension. Example: `Hdd:\Content\0000000000000000\584A07D1\00000002\77205BC1241C708A8A10B7303AF90E5EDD0286B1`
+| 1 vs 100 game, show and episode DLCs | `Hdd:\Content\0000000000000000\584A07D1\00000002\` |
 
 ## Content ids
 
@@ -55,3 +51,14 @@ Check a file before you copy it. Its SHA-256 checksum must match the table. On a
 | `B30A40EE667432FA68559FA37B929C29E7985E56` | Episode | English | `025122310aa92aebf3d2b03a758f25a5ac5d2c9b40a66b8ec3e6aede9284ed63` |
 | `C965577112F783E8E7F33E8C957263E03DEDB7F7` | Episode | French | `a70aeb4a214d53a69e93ca9c81046f52390d1f877359b66fc09df232d460ef94` |
 | `FA6873618900F1613CD72C0FCA3C4B57C8BB02E8` | Episode | German | `d2652a491fbb4c8fe74c5c46b7fb022f6d903a6bb65172598d7ac0f582666bbf` |
+
+## Support
+
+If you are running into issues
+
+- Check the issues / discussions sections of the Github repositories
+- Visit our Discord: https://discord.gg/tV3ajhwFTf
+
+## Disclaimer
+
+1 vs 100, Xbox, Xbox 360 and Xbox LIVE are trademarks of their owners. This is an unofficial fan project, not affiliated with or endorsed by Microsoft or the game's developers.

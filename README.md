@@ -1,6 +1,6 @@
 # 1 vs 100 loader (Xbox 360)
 
-A system DLL that lets the Xbox 360 game *1 vs 100* run against a LAN revival backend instead of
+A system DLL that lets the Xbox 360 game *1 vs 100* run against a custom revival backend instead of
 the retired Xbox Live service. It patches the running title and XAM in memory: server lookups
 point at the backend, the game session runs without Live, multiplayer traffic is relayed through
 the backend's matchmaking service, and Marketplace content is found on loose installs.
@@ -8,16 +8,23 @@ the backend's matchmaking service, and Marketplace content is found on loose ins
 | Component | What it is |
 |-----------|------------|
 | `1vs100Reborn.xex` | the system DLL (`sysdll/`), loaded by DashLaunch |
-| `1vs100XdkLauncher.xex` | a launcher title (`launcher/`) that checks the console is ready (profile signed in as user 0, avatar data installed), loads the DLL through DashLaunch, sets the launch data the game requires and starts the game |
+| `launcher.xex` | The game launcher (`launcher/`) that checks that the console is ready (profile signed in as user 0, avatar data installed), loads the DLL through DashLaunch, sets the launch data the game requires and starts the game |
 
-**Supported title builds:** v2.0.1149.0 (retail, title id 584A07D1) and v2.0.1317.0 (execution
-title id 584A07E4). Other builds are detected and left untouched. The backend is revival
-(separate repository).
+**Supported title builds:**
+
+- v2.0.1149.0 (retail, title id 584A07D1)
+- v2.0.1317.0 (debug, title id 584A07E4)
 
 ## Quick start
 
-Requirements: the Xbox 360 XDK (under Wine on Linux, or native on Windows), CMake ≥ 3.21, Ninja and
-Python 3.
+Check the [Releases](https://github.com/1vs100/1vs100-reborn-x360) page and download the latest archive.
+
+## How to compile?
+
+Requirements: 
+- Xbox 360 XDK (under Wine on Linux, or native on Windows)
+- CMake ≥ 3.21
+- Python 3
 
 ```
 export XEDK=~/xdk                 # XDK root
@@ -25,7 +32,7 @@ cmake --preset xdk                # production build -> build/
 cmake --build --preset xdk
 ```
 
-`./build.sh` does the same and also deploys the loader when `XEEDEE_HOST` names the console.
+`./build.sh` does the same.
 
 | Preset | Build | Output |
 |--------|-------|--------|
@@ -54,3 +61,14 @@ first** (its `game:\` directory), then on the HDD root:
 |----------|----------|
 | [`verification/README.md`](verification/README.md) | patch manifests and how to record one on hardware |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | conventions and the pull-request checklist |
+
+## Support
+
+If you are running into issues
+
+- Check the issues / discussions sections of the Github repositories
+- Visit our Discord: https://discord.gg/tV3ajhwFTf
+
+## Disclaimer
+
+1 vs 100, Xbox, Xbox 360 and Xbox LIVE are trademarks of their owners. This is an unofficial fan project, not affiliated with or endorsed by Microsoft or the game's developers.

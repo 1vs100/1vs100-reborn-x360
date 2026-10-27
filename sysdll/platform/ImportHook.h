@@ -12,6 +12,9 @@ enum ImportPatchResult {
 /* Only slots holding the real export are patched, so each ordinal hooks once. */
 ImportPatchResult PatchModuleImport(
 	PLDR_DATA_TABLE_ENTRY Module, CHAR *ImportedModuleName, DWORD Ordinal, DWORD PatchAddress);
+/* Undo: slots holding PatchAddress get the real export back. */
+ImportPatchResult RestoreModuleImport(
+	PLDR_DATA_TABLE_ENTRY Module, CHAR *ImportedModuleName, DWORD Ordinal, DWORD PatchAddress);
 
 /* Returns the original address (0 on failure). */
 DWORD hookExportOrd(char *modName, DWORD ord, DWORD dstFun);

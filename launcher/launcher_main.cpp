@@ -38,6 +38,10 @@
 #define DLAUNCH_START_SYS_MODULE_ORDINAL 2
 
 typedef DWORD (*dlaunchStartSysModule_t)(char *modPath);
+#define DLAUNCH_GET_OPT_VAL_BY_NAME_ORDINAL 9
+#define DLAUNCH_SET_OPT_VAL_BY_NAME_ORDINAL 10
+typedef BOOL (*dlaunchGetOptValByName_t)(char *name, DWORD *value);
+typedef BOOL (*dlaunchSetOptValByName_t)(char *name, DWORD *value);
 
 #define REVIVAL_INI_FILE "1vs100Reborn.ini"
 #define PATCH_SWITCH_FILE "1vs100Reborn.disable"
@@ -134,6 +138,47 @@ static BOOL LoadSysdllViaDashLaunch(const CHAR *path)
 	return NT_SUCCESS((NTSTATUS)loadStatus);
 }
 
+/* DashLaunch options the backend traffic relies on: sockpatch gives every title the insecure
+   socket privilege, xhttp lets XAM's HTTP stack talk to insecure hosts. Switched on at run time,
+   so a launch.ini that lacks them does not matter. A failure is logged and does not stop the
+   launch. */
+static const char *const kDashLaunchOptions[] = {"sockpatch", "xhttp"};
+
+static VOID EnsureDashLaunchOptions()
+{
+	HANDLE hDashLaunch = NULL;
+	dlaunchGetOptValByName_t getOpt = NULL;
+	dlaunchSetOptValByName_t setOpt = NULL;
+
+	if (!NT_SUCCESS(XexGetModuleHandle((PSZ)DASHLAUNCH_MODULE, &hDashLaunch)) || !hDashLaunch) {
+		LogWarn("Launcher: DashLaunch options: DashLaunch not resident");
+		return;
+	}
+	XexGetProcedureAddress(hDashLaunch, DLAUNCH_GET_OPT_VAL_BY_NAME_ORDINAL, &getOpt);
+	XexGetProcedureAddress(hDashLaunch, DLAUNCH_SET_OPT_VAL_BY_NAME_ORDINAL, &setOpt);
+	if (!getOpt || !setOpt) {
+		LogWarn("Launcher: DashLaunch options: no getopt/setopt (%p %p)", getOpt, setOpt);
+		return;
+	}
+	for (DWORD i = 0; i < sizeof(kDashLaunchOptions) / sizeof(kDashLaunchOptions[0]); ++i) {
+		char *name = (char *)kDashLaunchOptions[i];
+		DWORD value = 0;
+		BOOL got = getOpt(name, &value);
+		if (got && value != 0) {
+			Log("Launcher: DashLaunch %s: on", name);
+			continue;
+		}
+		value = 1;
+		BOOL set = setOpt(name, &value);
+		value = 0;
+		got = getOpt(name, &value);
+		if (got && value != 0)
+			Log("Launcher: DashLaunch %s: was off, switched on", name);
+		else
+			LogWarn("Launcher: DashLaunch %s: still off (set -> %d, get -> %d)", name, set, got);
+	}
+}
+
 static HANDLE ResidentModule(const CHAR *name)
 {
 	HANDLE hModule = NULL;
@@ -226,6 +271,88 @@ static VOID RefuseLaunch(const WCHAR *reason)
 	XLaunchNewImage(XLAUNCH_KEYWORD_DEFAULT_APP, 0);
 }
 
+#define PROBE_PORT 80
+/* Fixed path: the server operator sees consoles check in. */
+#define PROBE_PATH "/hi_x360"
+#define PROBE_TIMEOUT_MS 3000
+
+/* One HTTP GET of PROBE_PATH to the backend on the launcher's own stack: one log line saying
+   whether the host answers. Insecure only, never SO_PRIVATE (that confines a socket to the
+   subnet). Never stops the launch. */
+static VOID ProbeBackend(const CHAR *host, DWORD inAddr)
+{
+	BOOL on = TRUE;
+	DWORD timeout = PROBE_TIMEOUT_MS;
+	SOCKADDR_IN addr;
+	CHAR request[160];
+	CHAR reply[128];
+	INT rc, len;
+
+	SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (s == INVALID_SOCKET) {
+		LogWarn("Launcher: backend %s:%u: socket -> %d", host, PROBE_PORT, WSAGetLastError());
+		return;
+	}
+	setsockopt(s, SOL_SOCKET, SO_MARKINSECURE, (const CHAR *)&on, sizeof(on));
+	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const CHAR *)&timeout, sizeof(timeout));
+	setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (const CHAR *)&timeout, sizeof(timeout));
+
+	len = _snprintf(request, sizeof(request) - 1,
+		"GET " PROBE_PATH " HTTP/1.0\r\nHost: %s\r\nConnection: close\r\n\r\n", host);
+	if (len < 0) {
+		LogWarn("Launcher: backend %s: host name too long for the probe", host);
+		closesocket(s);
+		return;
+	}
+
+	ZeroMemory(&addr, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.S_un.S_addr = inAddr;
+	addr.sin_port = htons(PROBE_PORT);
+	/* The socket timeouts do not bound connect(): connect non-blocking, wait in select(). */
+	u_long nonBlocking = 1;
+	ioctlsocket(s, FIONBIO, &nonBlocking);
+	if (connect(s, (SOCKADDR *)&addr, sizeof(addr)) != 0 && WSAGetLastError() != WSAEWOULDBLOCK) {
+		LogWarn("Launcher: backend %s:%u: connect -> %d", host, PROBE_PORT, WSAGetLastError());
+		closesocket(s);
+		return;
+	}
+	fd_set writable, failed;
+	FD_ZERO(&writable);
+	FD_ZERO(&failed);
+	FD_SET(s, &writable);
+	FD_SET(s, &failed);
+	TIMEVAL wait = {PROBE_TIMEOUT_MS / 1000, (PROBE_TIMEOUT_MS % 1000) * 1000};
+	rc = select(0, NULL, &writable, &failed, &wait);
+	if (rc <= 0 || !FD_ISSET(s, &writable)) {
+		LogWarn("Launcher: backend %s:%u: connect %s (select -> %d, error %d)", host, PROBE_PORT,
+			rc == 0 ? "timed out" : "failed", rc, WSAGetLastError());
+		closesocket(s);
+		return;
+	}
+	nonBlocking = 0;
+	ioctlsocket(s, FIONBIO, &nonBlocking);
+	rc = send(s, request, len, 0);
+	if (rc != len) {
+		LogWarn("Launcher: backend %s:%u: send -> %d, error %d", host, PROBE_PORT, rc,
+			WSAGetLastError());
+		closesocket(s);
+		return;
+	}
+	rc = recv(s, reply, sizeof(reply) - 1, 0);
+	if (rc <= 0) {
+		LogWarn("Launcher: backend %s:%u: recv -> %d, error %d", host, PROBE_PORT, rc,
+			WSAGetLastError());
+	} else {
+		reply[rc] = 0;
+		for (len = 0; len < rc && reply[len] != '\r' && reply[len] != '\n'; ++len) {
+		}
+		reply[len] = 0;
+		Log("Launcher: backend %s:%u%s reachable: \"%s\"", host, PROBE_PORT, PROBE_PATH, reply);
+	}
+	closesocket(s);
+}
+
 /* Hostname to IPv4 through the console DNS. Starts and stops its own stack. */
 static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 {
@@ -261,6 +388,8 @@ static BOOL ResolveHost(const CHAR *host, DWORD *inAddr)
 	} else {
 		LogWarn("Launcher: XNetDnsLookup(%s) -> %d", host, rc);
 	}
+	if (resolved)
+		ProbeBackend(host, *inAddr);
 	WSACloseEvent(done);
 	WSACleanup();
 	XNetCleanup();
@@ -372,6 +501,8 @@ void __cdecl main()
 {
 	Log("Launcher: starting");
 	ResolveGameDir();
+	/* Before the backend probe in the config read: its insecure socket needs sockpatch. */
+	EnsureDashLaunchOptions();
 	/* Config first: a refused launch lands in the file too. */
 	LauncherConfig config;
 	const WCHAR *configRefusal = ReadRevivalConfig(&config);

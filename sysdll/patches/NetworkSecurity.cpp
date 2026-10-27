@@ -1,4 +1,4 @@
-/* Title sockets reach LAN peers: insecure marks, security bypass, backend service address, instant QoS. */
+/* Title sockets reach LAN peers and routed hosts: insecure marks, security bypass, backend service address, instant QoS. */
 #include "PatchTables.h"
 #include "../registry/PatchHelpers.h"
 #include "../config/RevivalConfig.h"
@@ -13,8 +13,9 @@ typedef int(NTAPI *NetDll_setsockopt_t)(XNCALLER_TYPE, SOCKET, int, int, const c
 
 static NetDll_setsockopt_t orig_setsockopt = NULL;
 
-/* Streams also get SO_PRIVATE; datagrams do not. */
-static VOID MarkInsecureXnc(XNCALLER_TYPE n, SOCKET s, int type)
+/* Insecure only. SO_PRIVATE would confine the socket to the local subnet: the Grid, ad and
+   matchmaking hosts are routed and would get WSAEHOSTUNREACH. */
+static VOID MarkInsecureXnc(XNCALLER_TYPE n, SOCKET s)
 {
 	BOOL b = TRUE;
 	NetDll_setsockopt_t setopt;
@@ -22,8 +23,6 @@ static VOID MarkInsecureXnc(XNCALLER_TYPE n, SOCKET s, int type)
 		orig_setsockopt = (NetDll_setsockopt_t)ResolveFunction("xam.xex", 7);
 	setopt = orig_setsockopt ? orig_setsockopt : NetDll_setsockopt;
 	setopt(n, s, SOL_SOCKET, SO_MARKINSECURE, (char *)&b, sizeof(BOOL));
-	if (type == SOCK_STREAM)
-		setopt(n, s, SOL_SOCKET, SO_PRIVATE, (char *)&b, sizeof(BOOL));
 }
 
 static int NetDll_socketHook(XNCALLER_TYPE n, int af, int type, int protocol)
@@ -31,7 +30,7 @@ static int NetDll_socketHook(XNCALLER_TYPE n, int af, int type, int protocol)
 	int s;
 	LOG_DEBUG("xam", "socketHook");
 	s = NetDll_socket(n, af, type, protocol);
-	MarkInsecureXnc(n, s, type);
+	MarkInsecureXnc(n, s);
 	return s;
 }
 
@@ -128,10 +127,11 @@ static INT NetDll_XNetQosReleaseHook(XNCALLER_TYPE n, __in XNQOS *pxnqos)
 	return NetDll_XNetQosRelease(n, pxnqos);
 }
 
+/* The socket row also runs early, before any game code: the second run reports no_match. */
 static const PatchDescriptor kRows[] = {
-	{"NetDll_socket", "netdll_socket", ON_TITLE,
-		"Every title socket is marked insecure (and private when a stream)", InstallXamImport, NULL,
-		3, (PVOID)NetDll_socketHook},
+	{"NetDll_socket", "netdll_socket", ON_EARLY | ON_TITLE,
+		"Every title socket is marked insecure (never private: that confines it to the subnet)",
+		InstallXamImport, NULL, 3, (PVOID)NetDll_socketHook},
 	{"NetDll_XNetStartup", "netdll_xnetstartup", ON_TITLE,
 		"XNetStartup gets XNET_STARTUP_BYPASS_SECURITY", InstallXamImport, NULL, 51,
 		(PVOID)NetDll_XNetStartupHook},

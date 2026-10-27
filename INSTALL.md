@@ -14,7 +14,7 @@ Tested with:
 
 - 1 vs 100 game build 2.0.1149.0
 - Kernel 2.0.17559.0
-- DashLaunch with `xhttp` and `sockpatch` enabled
+- DashLaunch with `xhttp` and `sockpatch` enabled (the launcher switches both on at start if `launch.ini` leaves them off)
 
 ## Steps
 

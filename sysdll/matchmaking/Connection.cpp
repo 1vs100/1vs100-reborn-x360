@@ -12,12 +12,12 @@ static SOCKET g_Socket = INVALID_SOCKET;
 static BYTE g_RejectReason = 0;
 static BYTE g_RejectVersion = 0;
 
-/* LAN-usable outside Live; both options: TCP stream. */
+/* Usable outside Live. Never SO_PRIVATE: it confines the socket to the local subnet, and a
+   routed backend then gets WSAEHOSTUNREACH. */
 static VOID MarkInsecure(SOCKET s)
 {
 	BOOL insecure = TRUE;
 	setsockopt(s, SOL_SOCKET, SO_MARKINSECURE, (const CHAR *)&insecure, sizeof(insecure));
-	setsockopt(s, SOL_SOCKET, SO_PRIVATE, (const CHAR *)&insecure, sizeof(insecure));
 }
 
 BOOL Connection_Open()

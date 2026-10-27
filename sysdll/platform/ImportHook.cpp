@@ -14,13 +14,10 @@ static VOID PatchInJump(DWORD *addr, DWORD dest, BOOL linked)
 	doSync(addr);
 }
 
-ImportPatchResult PatchModuleImport(
-	PLDR_DATA_TABLE_ENTRY Module, CHAR *ImportedModuleName, DWORD Ordinal, DWORD PatchAddress)
+/* Every import slot of Module holding `from` is pointed at `to`, thunk included. */
+static ImportPatchResult RetargetModuleImport(
+	PLDR_DATA_TABLE_ENTRY Module, DWORD from, DWORD to)
 {
-	DWORD address = (DWORD)ResolveFunction(ImportedModuleName, Ordinal);
-	if (address == NULL)
-		return IMPORT_UNRESOLVED;
-
 	VOID *headerBase = Module->XexHeaderBase;
 	PXEX_IMPORT_DESCRIPTOR importDesc =
 		(PXEX_IMPORT_DESCRIPTOR)RtlImageXexHeaderField(headerBase, 0x000103FF);
@@ -38,15 +35,33 @@ ImportPatchResult PatchModuleImport(
 		DWORD *importAdd = (DWORD *)(importTable + 1);
 		for (DWORD y = 0; y < importTable->ImportTable.ImportCount; y++) {
 			DWORD value = *((DWORD *)importAdd[y]);
-			if (value == address) {
-				memcpy((DWORD *)importAdd[y], &PatchAddress, 4);
-				PatchInJump((DWORD *)importAdd[y + 1], PatchAddress, FALSE);
+			if (value == from) {
+				memcpy((DWORD *)importAdd[y], &to, 4);
+				PatchInJump((DWORD *)importAdd[y + 1], to, FALSE);
 				result = IMPORT_PATCHED;
 			}
 		}
 		importTable = (XEX_IMPORT_TABLE_ORG *)(((BYTE *)importTable) + importTable->TableSize);
 	}
 	return result;
+}
+
+ImportPatchResult PatchModuleImport(
+	PLDR_DATA_TABLE_ENTRY Module, CHAR *ImportedModuleName, DWORD Ordinal, DWORD PatchAddress)
+{
+	DWORD address = (DWORD)ResolveFunction(ImportedModuleName, Ordinal);
+	if (address == NULL)
+		return IMPORT_UNRESOLVED;
+	return RetargetModuleImport(Module, address, PatchAddress);
+}
+
+ImportPatchResult RestoreModuleImport(
+	PLDR_DATA_TABLE_ENTRY Module, CHAR *ImportedModuleName, DWORD Ordinal, DWORD PatchAddress)
+{
+	DWORD address = (DWORD)ResolveFunction(ImportedModuleName, Ordinal);
+	if (address == NULL)
+		return IMPORT_UNRESOLVED;
+	return RetargetModuleImport(Module, PatchAddress, address);
 }
 
 static PIMAGE_EXPORT_ADDRESS_TABLE getModuleEat(char *modName)

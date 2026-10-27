@@ -6,13 +6,18 @@
 enum ApplyResult {
 	APPLY_UNSUPPORTED, /* not a supported build */
 	APPLY_APPLIED,     /* pass completed */
-	APPLY_BUSY,        /* another pass running; call again */
+	APPLY_BUSY,        /* image not mapped yet or another pass running; call again */
 };
 
 /* Main pass: target image loaded, or title changed under the poll. */
 ApplyResult ApplyTitlePatches();
 /* Early pass: title thread, before game code. */
 VOID ApplyEarlyTitlePatches();
+/* Same, without waiting for a running pass, which applies the early rows itself. For xam's
+   launch thread, which must not block on the loader. */
+VOID TryApplyEarlyTitlePatches();
+/* Title thread: FALSE when the main pass did not finish within timeoutMs. */
+BOOL WaitForTitlePass(DWORD timeoutMs, DWORD *waitedMs);
 /* Running step, cleared on read; for the loader fault handler. */
 const char *TakeTitlePatchStep();
 /* Exited: forget everything tied to the old process. */

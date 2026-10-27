@@ -1,4 +1,5 @@
 #include "TitleLifecycle.h"
+#include "TitleEntryHook.h"
 #include "../registry/PatchHelpers.h"
 #include "../registry/PatchRegistry.h"
 #include "../config/PatchSwitches.h"
@@ -13,6 +14,8 @@
 static SpinLock g_PassInProgress = SPINLOCK_INIT;
 /* Early rows applied for this launch. */
 static volatile LONG g_EarlyApplied = 0;
+/* Main pass finished for this launch, applied or refused. */
+static volatile LONG g_TitlePassDone = 0;
 
 static BOOL TryBeginPass()
 {
@@ -32,24 +35,19 @@ static VOID ApplyEarlyRows()
 	LOG_INFO("title", "applying early title patches build=%s", TitleProfileName());
 	ReportPatchPhase("begin", "early");
 	ApplyPatchPhase(PHASE_EARLY);
+	/* Entry held until the main pass is done: no game code runs before it. Cleared here, since
+	   a refused pass of another title sets it. */
+	InterlockedExchange(&g_TitlePassDone, 0);
+	InstallTitleEntryHook();
 	ReportPatchPhase("end", "early");
 	ReleaseLockBarrier();
 	InterlockedExchange(&g_EarlyApplied, 1);
 }
 
 /* Title threads wait for the early rows only, never the whole pass. */
-VOID ApplyEarlyTitlePatches()
+/* Caller holds the pass. */
+static VOID ApplyEarlyInPass()
 {
-	if (!TryBeginPass()) {
-		DWORD waited = 0;
-		while (g_PassInProgress.v != 0 && !g_EarlyApplied) {
-			Sleep(1);
-			++waited;
-		}
-		LOG_INFO("title", "early title patches: applied by the running pass (waited %u ms)",
-			waited);
-		return;
-	}
 	__try {
 		/* No config: refuse, like the title pass. */
 		if (SelectTitleProfile() && RevivalConfigReceived())
@@ -57,6 +55,30 @@ VOID ApplyEarlyTitlePatches()
 	} __finally {
 		EndPass();
 	}
+}
+
+VOID ApplyEarlyTitlePatches()
+{
+	DWORD waited = 0;
+	/* The running pass may be another title's, which applies no early rows: retry. */
+	while (!TryBeginPass()) {
+		while (g_PassInProgress.v != 0 && !g_EarlyApplied) {
+			Sleep(1);
+			++waited;
+		}
+		if (g_EarlyApplied) {
+			LOG_INFO("title", "early title patches: applied by the running pass (waited %u ms)",
+				waited);
+			return;
+		}
+	}
+	ApplyEarlyInPass();
+}
+
+VOID TryApplyEarlyTitlePatches()
+{
+	if (TryBeginPass())
+		ApplyEarlyInPass();
 }
 
 const char *TakeTitlePatchStep()
@@ -68,7 +90,6 @@ static BOOL RunTitlePass()
 {
 	/* Detection and profile binding; nothing below runs unless supported. */
 	if (!SelectTitleProfile()) {
-		LOG_INFO("title", "title patches refused: unsupported build");
 		ReportPatchPhase("unsupported", "title");
 		return FALSE;
 	}
@@ -98,6 +119,9 @@ static BOOL RunTitlePass()
 ApplyResult ApplyTitlePatches()
 {
 	ApplyResult result = APPLY_UNSUPPORTED;
+	/* The title id can change before xam maps the image: not ready yet, not unsupported. */
+	if (*XexExecutableModuleHandle == NULL)
+		return APPLY_BUSY;
 	if (!TryBeginPass()) {
 		LOG_INFO("title", "title patches: another pass in progress, deferred");
 		return APPLY_BUSY;
@@ -105,9 +129,22 @@ ApplyResult ApplyTitlePatches()
 	__try {
 		result = RunTitlePass() ? APPLY_APPLIED : APPLY_UNSUPPORTED;
 	} __finally {
+		InterlockedExchange(&g_TitlePassDone, 1);
 		EndPass();
 	}
 	return result;
+}
+
+BOOL WaitForTitlePass(DWORD timeoutMs, DWORD *waitedMs)
+{
+	*waitedMs = 0;
+	while (!g_TitlePassDone) {
+		if (*waitedMs >= timeoutMs)
+			return FALSE;
+		Sleep(1);
+		++*waitedMs;
+	}
+	return TRUE;
 }
 
 VOID ResetTitleState(DWORD exitedTitleId)
@@ -115,6 +152,8 @@ VOID ResetTitleState(DWORD exitedTitleId)
 	/* Flush the exiting title lines now. */
 	Log_RequestFlush();
 	InterlockedExchange(&g_EarlyApplied, 0);
+	InterlockedExchange(&g_TitlePassDone, 0);
+	ResetTitleEntryHook();
 	ClearTitleProfile();
 	ReleaseTitleCaves(exitedTitleId);
 	TeardownMatchmakingClient();

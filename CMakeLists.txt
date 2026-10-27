@@ -16,6 +16,7 @@ set(LOADER_SOURCES
     sysdll/core/LoaderMain.cpp
     sysdll/core/KernelLoadHook.cpp
     sysdll/core/TitleLifecycle.cpp
+    sysdll/core/TitleEntryHook.cpp
     sysdll/core/PatchList.cpp
     # registry: patch manifest and checked installs
     sysdll/registry/PatchHelpers.cpp

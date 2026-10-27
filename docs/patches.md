@@ -9,7 +9,7 @@ the "Off for" column lists the builds whose profile turns it off on purpose (`wh
 
 | # | Manifest id | Switch | Phase | Off for | What it does | File |
 |---|-------------|--------|-------|---------|--------------|------|
-| 1 | `NetDll_socket` | `netdll_socket` | title | - | Every title socket is marked insecure (and private when a stream) | `patches/NetworkSecurity.cpp` |
+| 1 | `NetDll_socket` | `netdll_socket` | early, title | - | Every title socket is marked insecure (never private: that confines it to the subnet) | `patches/NetworkSecurity.cpp` |
 | 2 | `NetDll_XNetStartup` | `netdll_xnetstartup` | title | - | XNetStartup gets XNET_STARTUP_BYPASS_SECURITY | `patches/NetworkSecurity.cpp` |
 | 3 | `NetDll_XNetServerToInAddr` | `netdll_xnetservertoinaddr` | title | - | XNetServerToInAddr returns the address it was given | `patches/NetworkSecurity.cpp` |
 | 4 | `NetDll_XNetQosLookup` | `netdll_qos_lookup` | title | - | QoS lookups complete at once with fixed good values | `patches/NetworkSecurity.cpp` |

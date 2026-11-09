@@ -64,10 +64,11 @@ first** (its `game:\` directory), then on the HDD root:
 
 ## Making a release
 
-There is no CI for this repository: build with the `xdk` preset, then zip these files into one folder:
+CI builds both presets (`xdk`, `xdk-diagnostics`) and the host tests on every push and
+pull request.
+
+To cut a release, download the `xex` artifact from a green CI run, then zip these files into one folder:
 
 - `launcher.xex` and `1vs100Reborn.xex` from `build/`
 - `1vs100Reborn.ini`: a copy of `1vs100Reborn.ini.example` with `sink=off`, so players get no log files unless they ask for them
 - `INSTALL.md`
-
-Publish it as a normal release, not a pre-release: the guides link to the releases page, and only a normal release counts as the latest.

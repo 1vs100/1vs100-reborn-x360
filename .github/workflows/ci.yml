@@ -1,0 +1,85 @@
+name: ci
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host-tests:
+    name: host tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends cmake ninja-build g++
+      - name: Configure
+        run: cmake -S tests -B build-tests
+      - name: Build
+        run: cmake --build build-tests
+      - name: Test
+        run: ctest --test-dir build-tests --output-on-failure
+
+  xex:
+    name: xex build
+    # Secrets are not passed to pull requests from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      XDK_URL: ${{ secrets.XDK_URL }}
+      WINEDEBUG: -all
+      WINEPREFIX: ${{ github.workspace }}/.wine-xdk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Wine and build tools
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends wine wine64 wine32:i386 winbind cmake ninja-build python3
+          wine --version
+      - name: Download XDK
+        run: |
+          if [ -z "$XDK_URL" ]; then
+            echo "::error::XDK_URL secret is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          curl -fsSL --retry 3 "$XDK_URL" -o "$RUNNER_TEMP/xdk.tar.xz"
+          mkdir -p "$RUNNER_TEMP/xdk-extract"
+          tar -xJf "$RUNNER_TEMP/xdk.tar.xz" -C "$RUNNER_TEMP/xdk-extract"
+          rm "$RUNNER_TEMP/xdk.tar.xz"
+          CL="$(find "$RUNNER_TEMP/xdk-extract" -path '*/bin/win32/cl.exe' -print -quit)"
+          if [ -z "$CL" ]; then
+            echo "::error::cl.exe not found under bin/win32 in xdk.tar.xz"
+            exit 1
+          fi
+          XDK_ROOT="$(dirname "$(dirname "$(dirname "$CL")")")"
+          echo "XEDK=$XDK_ROOT" >> "$GITHUB_ENV"
+          echo "XDK root: $XDK_ROOT"
+      - name: Configure production preset
+        run: cmake --preset xdk
+      - name: Build production preset
+        run: cmake --build --preset xdk
+      - name: Configure diagnostics preset
+        run: cmake --preset xdk-diagnostics
+      - name: Build diagnostics preset
+        run: cmake --build --preset xdk-diagnostics
+      - name: Upload XEX artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xex
+          path: |
+            build/*.xex
+            build-diagnostics/*.xex
+          if-no-files-found: error

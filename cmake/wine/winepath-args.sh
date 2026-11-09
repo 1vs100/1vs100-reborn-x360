@@ -18,10 +18,11 @@ ensure_wineserver() {
 
     # A global `pgrep wineserver` is wrong: Wine has one server per prefix, so
     # a server for an unrelated prefix says nothing about this build. Identify
-    # a server by the WINEPREFIX in its environment instead.
+    # a server by the WINEPREFIX in its environment instead. Debian and Ubuntu
+    # run the server as wineserver32 or wineserver64.
     find_prefix_wineserver() {
         local pid prefix
-        for pid in $(pgrep -x wineserver 2>/dev/null || true); do
+        for pid in $(pgrep -x 'wineserver(32|64)?' 2>/dev/null || true); do
             [ -r "/proc/$pid/environ" ] || continue
             prefix="$(tr '\0' '\n' < "/proc/$pid/environ" |
                 sed -n 's/^WINEPREFIX=//p' | head -n1)"
@@ -49,9 +50,10 @@ ensure_wineserver() {
         # wineboot is the readiness barrier and causes device services to be
         # born with /dev/null descriptors too. Do not hide initialization
         # failures: a half-created prefix is not safe to compile against.
-        wine wineboot --init </dev/null >/dev/null 2>&1
+        wine wineboot --init </dev/null >"$WINEPREFIX/.xdk-wineboot.log" 2>&1 || true
         if ! find_prefix_wineserver >/dev/null; then
             printf 'wine bootstrap failed for prefix %s\n' "$WINEPREFIX" >&2
+            cat "$WINEPREFIX/.xdk-wineboot.log" >&2
             flock -u 9
             return 1
         fi

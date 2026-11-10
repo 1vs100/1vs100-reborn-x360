@@ -4,6 +4,7 @@
 [![docs](https://img.shields.io/badge/docs-docs.1vs100.fans-blue?logo=readthedocs&logoColor=white)](https://docs.1vs100.fans)
 [![download](https://img.shields.io/github/v/release/1vs100/1vs100-reborn-x360?include_prereleases&label=download)](https://github.com/1vs100/1vs100-reborn-x360/releases)
 [![discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/tV3ajhwFTf)
+![ai](https://img.shields.io/badge/ai-assisted-orange?logo=micro%3Abit&logoColor=white&label=ai)
 
 - Play the Xbox 360 game show 1 vs 100 again on your modded Xbox 360.
 - Play online on the community server, together with PC and Xbox One / Series players.
